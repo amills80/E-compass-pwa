@@ -1,0 +1,409 @@
+/* E-Compass — calm, low-stimulation theme.
+   Sizes are in rem so they follow iOS Dynamic Type (see html rule below). */
+
+:root {
+  --bg: #f7f4ef;
+  --surface: #ffffff;
+  --surface-2: #efeae2;
+  --text: #1f1d1a;
+  --text-2: #534e47;
+  --border: #857d72;
+  --accent: #2f5f59;
+  --accent-text: #ffffff;
+  --focus: #1f56b5;
+  --comfy-tint: #dcebe4;
+  --comfy-edge: #3f7564;
+  --uncomfy-tint: #f6e3cf;
+  --uncomfy-edge: #94582a;
+  --unsure-tint: #e6e1da;
+  --danger: #a33a2a;
+  --inverse-bg: #1f1d1a;
+  --inverse-text: #fbf8f3;
+  --radius: 1.25rem;
+  --gap: 0.75rem;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1c1b19;
+    --surface: #282622;
+    --surface-2: #322f2a;
+    --text: #f2eee8;
+    --text-2: #c9c2b8;
+    --border: #8f877b;
+    --accent: #8cc3b8;
+    --accent-text: #10201d;
+    --focus: #8ab4ff;
+    --comfy-tint: #1f3530;
+    --comfy-edge: #86bfae;
+    --uncomfy-tint: #3d2c1d;
+    --uncomfy-edge: #e0a670;
+    --unsure-tint: #36322d;
+    --danger: #ff9b8a;
+    --inverse-bg: #fbf8f3;
+    --inverse-text: #1f1d1a;
+  }
+}
+
+/* iOS "Increase Contrast" */
+@media (prefers-contrast: more) {
+  :root {
+    --text-2: var(--text);
+    --border: var(--text);
+    --comfy-edge: var(--text);
+    --uncomfy-edge: var(--text);
+  }
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-size: 100%;
+  -webkit-text-size-adjust: 100%;
+  background: var(--bg);
+}
+/* Follow the iOS Text Size setting (Dynamic Type). */
+@supports (font: -apple-system-body) {
+  html { font: -apple-system-body; }
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.35;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+
+/* iPad: same single column, everything scaled up. */
+:root { --zoom: 1; }
+@media (min-width: 700px) {
+  :root { --zoom: 1.25; }
+}
+#app { zoom: var(--zoom); }
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+h1:focus { outline: none; }
+
+.sr-only {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---------- Screen frame ---------- */
+.screen {
+  /* zoom also scales viewport units, so divide it back out */
+  min-height: calc(100vh / var(--zoom));
+  min-height: calc(100dvh / var(--zoom));
+  max-width: 32rem;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  padding:
+    max(0.5rem, env(safe-area-inset-top))
+    max(1rem, env(safe-area-inset-right))
+    max(1.25rem, env(safe-area-inset-bottom))
+    max(1rem, env(safe-area-inset-left));
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  min-height: 4rem;
+  gap: var(--gap);
+}
+.topbar-spacer { flex: 1; }
+.btn-help { margin-left: auto; }
+
+.btn-back,
+.btn-help {
+  min-height: 3.5rem;
+  min-width: min(6rem, 44vw);
+  max-width: 100%;
+  padding: 0 1rem;
+  border-radius: 1rem;
+  font-weight: 700;
+  font-size: 1.1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+.btn-back { border: 2px solid var(--text); background: var(--surface); }
+.btn-help { background: var(--text); color: var(--bg); border-radius: 999px; }
+
+.crumbs {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.25rem 0 0.25rem;
+}
+.chip {
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.2rem 0.7rem;
+  border: 1.5px solid var(--border);
+  border-radius: 999px;
+  color: var(--text-2);
+  background: var(--surface);
+}
+
+.content { flex: 1; display: flex; flex-direction: column; }
+
+.q-title {
+  font-size: 1.85rem;
+  line-height: 1.15;
+  font-weight: 800;
+  margin: 0.5rem 0 1rem;
+  letter-spacing: -0.01em;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  overflow-wrap: break-word;
+}
+.lede { font-size: 1.3rem; color: var(--text-2); margin: -0.25rem 0 1rem; }
+.meta { font-size: 0.9rem; color: var(--text-2); }
+
+/* ---------- Choices ---------- */
+.choices {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+.choice {
+  width: 100%;
+  min-height: 4.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1.25rem;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  text-align: left;
+  transition: background-color 120ms ease, transform 120ms ease;
+}
+.choice:active { transform: scale(0.98); background: var(--surface-2); }
+.choice-label {
+  flex: 1;
+  min-width: 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+  /* At very large text sizes long single words ("Uncomfortable") hyphenate
+     instead of pushing the layout sideways. */
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  overflow-wrap: break-word;
+}
+/* Very large text: icon sits above the word so the word gets the full width. */
+.choice.has-icon { flex-wrap: wrap; }
+.choice.has-icon .icon { flex-shrink: 0; color: var(--text); }
+.chev { font-size: 2rem; line-height: 1; color: var(--text-2); }
+
+.choice.tone-comfortable { background: var(--comfy-tint); border-color: var(--comfy-edge); }
+.choice.tone-uncomfortable { background: var(--uncomfy-tint); border-color: var(--uncomfy-edge); }
+
+.choices-big .choice {
+  min-height: 9rem;
+  padding: 1rem 1.25rem;
+  gap: 0.5rem;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+}
+.choices-big .choice-label { flex: none; width: 100%; font-size: 1.75rem; }
+
+.skip {
+  margin-top: 1rem;
+  min-height: 4rem;
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+/* Subtle screen tint once the child has picked comfortable/uncomfortable. */
+.screen.tone-comfortable { background: linear-gradient(var(--comfy-tint), transparent 10rem); }
+.screen.tone-uncomfortable { background: linear-gradient(var(--uncomfy-tint), transparent 10rem); }
+
+/* ---------- Size ---------- */
+.size-choice { gap: 1.25rem; }
+.dot { flex-shrink: 0; border-radius: 50%; background: var(--text); margin: 0 0.25rem; }
+.dot-1 { width: 1.1rem; height: 1.1rem; margin: 0 1rem; }
+.dot-2 { width: 2rem; height: 2rem; margin: 0 0.55rem; }
+.dot-3 { width: 3rem; height: 3rem; }
+
+/* ---------- Feeling card ---------- */
+.feeling-card {
+  border: 2px solid var(--text);
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+.feeling-card p { font-size: 1.5rem; font-weight: 700; line-height: 1.3; }
+.feeling-card .card-size { margin-top: 0.4rem; font-weight: 800; }
+
+.actions { display: flex; flex-direction: column; gap: var(--gap); margin-top: auto; padding-top: 1rem; }
+.btn-primary {
+  min-height: 4.25rem;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: var(--accent-text);
+  font-size: 1.35rem;
+  font-weight: 800;
+}
+
+/* ---------- Show + Help cards (full screen, inverse) ---------- */
+.screen.variant-inverse { background: var(--inverse-bg); color: var(--inverse-text); max-width: none; }
+.show-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  gap: 0.5rem;
+  padding: 1rem;
+}
+.show-card p { font-size: 2.4rem; font-weight: 800; line-height: 1.2; max-width: 20ch; hyphens: auto; -webkit-hyphens: auto; overflow-wrap: break-word; }
+.help-card p { font-size: 3rem; }
+.btn-close {
+  min-height: 4.25rem;
+  width: 100%;
+  max-width: 32rem;
+  align-self: center;
+  border: 2px solid var(--inverse-text);
+  border-radius: var(--radius);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--inverse-text);
+}
+
+/* ---------- Coping ---------- */
+.steps { padding-left: 1.75rem; display: flex; flex-direction: column; gap: 0.75rem; }
+.steps li { font-size: 1.4rem; font-weight: 600; line-height: 1.3; }
+.breathing { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; }
+.breath-circle {
+  width: 9rem;
+  height: 9rem;
+  border-radius: 50%;
+  background: var(--comfy-tint);
+  border: 3px solid var(--comfy-edge);
+  animation: breathe 8s ease-in-out infinite;
+}
+.breath-circle.paused { animation-play-state: paused; transform: scale(0.85); }
+@keyframes breathe {
+  0%, 100% { transform: scale(0.6); }
+  50% { transform: scale(1); }
+}
+.btn-small {
+  min-height: 2.75rem;
+  padding: 0 1rem;
+  border: 2px solid var(--border);
+  border-radius: 999px;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+/* ---------- Grown-up gate ---------- */
+.grownup-gate { margin-top: auto; padding-top: 1.5rem; display: flex; }
+.hold-btn {
+  position: relative;
+  overflow: hidden;
+  min-height: 3rem;
+  min-width: 9rem;
+  padding: 0 1rem;
+  border: 1.5px solid var(--border);
+  border-radius: 0.9rem;
+  font-size: 0.95rem;
+  color: var(--text-2);
+  -webkit-touch-callout: none;
+}
+.hold-fill {
+  position: absolute;
+  inset: 0;
+  background: var(--surface-2);
+  transform-origin: left;
+  transform: scaleX(0);
+}
+.hold-label { position: relative; }
+
+/* ---------- Grown-ups history ---------- */
+.h2 { font-size: 1.15rem; font-weight: 800; margin: 1.5rem 0 0.6rem; }
+.week { list-style: none; display: flex; gap: 0.5rem; align-items: flex-end; height: 7rem; }
+.week-day { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.3rem; height: 100%; }
+.week-bar {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column-reverse;
+  border-radius: 0.4rem;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.seg-comfortable { background: var(--comfy-edge); }
+.seg-uncomfortable { background: var(--uncomfy-edge); }
+.seg-unsure { background: var(--border); }
+.week-label { font-size: 0.85rem; font-weight: 600; color: var(--text-2); }
+.legend { font-size: 0.85rem; color: var(--text-2); margin-top: 0.5rem; display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem; }
+.key { display: inline-block; width: 0.8rem; height: 0.8rem; border-radius: 0.2rem; margin-left: 0.4rem; }
+.key-comfortable { background: var(--comfy-edge); }
+.key-uncomfortable { background: var(--uncomfy-edge); }
+.key-unsure { background: var(--border); }
+
+.history { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+.history-row {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-left-width: 0.4rem;
+  border-radius: 0.9rem;
+  padding: 0.7rem 0.9rem;
+}
+.history-row.mood-comfortable { border-left-color: var(--comfy-edge); }
+.history-row.mood-uncomfortable { border-left-color: var(--uncomfy-edge); }
+.history-main { font-weight: 700; font-size: 1.05rem; margin-bottom: 0.15rem; }
+
+.danger { margin-top: 2rem; }
+.btn-secondary, .btn-danger {
+  min-height: 3rem;
+  padding: 0 1.1rem;
+  border-radius: 0.9rem;
+  font-weight: 700;
+  border: 2px solid var(--border);
+}
+.btn-danger { background: var(--danger); color: var(--bg); border-color: var(--danger); }
+.confirm { border: 2px solid var(--danger); border-radius: 0.9rem; padding: 1rem; }
+.confirm p { margin-bottom: 0.75rem; }
+.confirm-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+.version { margin-top: 2rem; }
+
+/* ---------- Motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; }
+  .choice:active { transform: none; }
+}
