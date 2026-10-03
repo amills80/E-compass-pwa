@@ -18,10 +18,14 @@ import { HoldButton } from './components/HoldButton';
 import { GrownUps } from './GrownUps';
 import { saveCheckIn } from './storage';
 import { onBusy, onIdleAtStart } from './updates';
+import { Welcome } from './Welcome';
+import { loadPrefs, markWelcomeSeen, savePrefs, shouldShowWelcome } from './prefs';
 
 export function App() {
   const [stack, setStack] = useState<Frame[]>([initialFrame()]);
   const [grownUps, setGrownUps] = useState(false);
+  // Decided once per app launch, never mid-session.
+  const [welcome, setWelcome] = useState(() => shouldShowWelcome());
   const frame = stack[stack.length - 1];
   const push = (f: Frame) => setStack((s) => [...s, f]);
   const back = () => setStack((s) => (s.length > 1 ? s.slice(0, -1) : s));
@@ -37,6 +41,20 @@ export function App() {
   }, [atStart]);
 
   if (grownUps) return <GrownUps onClose={() => setGrownUps(false)} />;
+
+  if (welcome && stack.length === 1) {
+    return (
+      <Welcome
+        viewKey="welcome"
+        onHelp={() => push(go(frame, { kind: 'help' }))}
+        onStart={(dontShowAgain) => {
+          if (dontShowAgain) savePrefs({ ...loadPrefs(), showWelcome: false });
+          markWelcomeSeen();
+          setWelcome(false);
+        }}
+      />
+    );
+  }
 
   const v = frame.view;
   const common = {

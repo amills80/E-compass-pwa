@@ -23,7 +23,11 @@ async function holdGrownUps(page: Page) {
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
-  await page.evaluate(() => localStorage.clear());
+  await page.evaluate(() => {
+    localStorage.clear();
+    // These tests cover the check-in flow; the welcome screen has its own spec.
+    localStorage.setItem('ecompass.prefs.v1', JSON.stringify({ showWelcome: false }));
+  });
   await page.reload();
 });
 

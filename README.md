@@ -14,7 +14,12 @@ to a grown-up, an optional calm-down step, and a private on-device history for c
 History is saved **only on that device**. Deleting the home-screen icon deletes the history.
 
 **Grown-ups area:** press and hold **Grown-ups** on the first screen for 3 seconds.
-With VoiceOver on, double-tap and hold.
+With VoiceOver on, double-tap and hold. It holds the check-in history and **Preferences**
+(turn the welcome screen back on, or reset preferences without touching history).
+
+**Welcome screen:** shown when the app opens, until someone ticks *Don't show this again*.
+It is decided once per launch, so it never reappears mid-session or after a quiet update.
+In a Safari tab (not yet on the Home Screen) it also shows Add to Home Screen steps.
 
 ## How it's built
 
@@ -23,7 +28,7 @@ With VoiceOver on, double-tap and hold.
 | Stack | Preact + Vite + TypeScript, `vite-plugin-pwa` (Workbox) for offline |
 | Content | `src/content/vocabulary.json`: every question, choice, sentence and calm-down step. Edit words here, not in code. |
 | Flow engine | `src/flow.ts`: an immutable navigation stack, so **Back is an exact undo** |
-| Storage | `src/storage.ts`: localStorage, on this device only |
+| Storage | `src/storage.ts` (check-ins) and `src/prefs.ts` (preferences), both localStorage on this device only, kept separate |
 | Updates | `src/updates.ts`: new versions download quietly and apply only on the start screen, never mid check-in |
 | Hosting | Netlify (`netlify.toml`) |
 

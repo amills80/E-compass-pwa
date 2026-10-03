@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { CheckIn, clearCheckIns, loadCheckIns } from './storage';
+import { Prefs, loadPrefs, resetPrefs, savePrefs } from './prefs';
 
 const DAY = 24 * 60 * 60 * 1000;
 const dayKey = (d: Date) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
@@ -8,6 +9,8 @@ const moodWord = { comfortable: 'Comfortable', uncomfortable: 'Uncomfortable', u
 export function GrownUps({ onClose }: { onClose: () => void }) {
   const [items, setItems] = useState<CheckIn[]>(() => loadCheckIns());
   const [confirming, setConfirming] = useState(false);
+  const [prefs, setPrefs] = useState<Prefs>(() => loadPrefs());
+  const [prefsNote, setPrefsNote] = useState('');
   const h1 = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
@@ -95,6 +98,37 @@ export function GrownUps({ onClose }: { onClose: () => void }) {
               ))}
             </ul>
           )}
+        </section>
+
+        <section aria-labelledby="prefs-h">
+          <h2 id="prefs-h" class="h2">Preferences</h2>
+          <label class="check-row">
+            <input
+              type="checkbox"
+              checked={prefs.showWelcome}
+              onChange={(e) => {
+                const on = (e.currentTarget as HTMLInputElement).checked;
+                const next = { ...prefs, showWelcome: on };
+                savePrefs(next);
+                setPrefs(next);
+                setPrefsNote(on ? 'The welcome screen will show next time the app opens.' : 'Welcome screen turned off.');
+              }}
+            />
+            <span>Show welcome screen when the app opens</span>
+          </label>
+          <button
+            type="button"
+            class="btn-secondary prefs-reset"
+            onClick={() => {
+              setPrefs(resetPrefs());
+              setPrefsNote('Preferences reset to defaults. Check-ins were not changed.');
+            }}
+          >
+            Reset preferences
+          </button>
+          <p class="meta" role="status">
+            {prefsNote}
+          </p>
         </section>
 
         {items.length > 0 && (
