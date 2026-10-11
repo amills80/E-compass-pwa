@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { CheckIn, clearCheckIns, loadCheckIns } from './storage';
-import { Prefs, loadPrefs, resetPrefs, savePrefs } from './prefs';
+import { Prefs, isInstalled, loadPrefs, resetPrefs, savePrefs } from './prefs';
+import { InstallSteps } from './InstallSteps';
 
 const DAY = 24 * 60 * 60 * 1000;
 const dayKey = (d: Date) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
@@ -14,7 +15,7 @@ export function GrownUps({ onClose }: { onClose: () => void }) {
   const h1 = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
-    document.title = 'Check-ins · E-Compass';
+    document.title = 'Grown-ups · E-Feels';
     h1.current?.focus({ preventScroll: true });
   }, []);
 
@@ -48,12 +49,14 @@ export function GrownUps({ onClose }: { onClose: () => void }) {
       </header>
       <main class="content">
         <h1 ref={h1} tabIndex={-1} class="q-title">
-          Check-ins
+          Grown-ups
         </h1>
+
+        <h2 class="h2 section-h">Check-ins</h2>
         <p class="meta">Saved only on this device.</p>
 
         <section aria-labelledby="week-h">
-          <h2 id="week-h" class="h2">Last 7 days</h2>
+          <h3 id="week-h" class="h3">Last 7 days</h3>
           <ul class="week" role="list">
             {week.map((d) => {
               const total = d.comfortable + d.uncomfortable + d.unsure;
@@ -81,7 +84,7 @@ export function GrownUps({ onClose }: { onClose: () => void }) {
         </section>
 
         <section aria-labelledby="list-h">
-          <h2 id="list-h" class="h2">All check-ins</h2>
+          <h3 id="list-h" class="h3">All check-ins</h3>
           {items.length === 0 ? (
             <p class="meta">No check-ins yet.</p>
           ) : (
@@ -93,6 +96,7 @@ export function GrownUps({ onClose }: { onClose: () => void }) {
                     {fmt.format(new Date(c.at))} · {moodWord[c.mood]}
                     {c.size ? ` · ${c.size}` : ''}
                     {c.coping ? ` · Tried: ${c.coping.replace(/-/g, ' ')}` : ''}
+                    {c.askedHelp ? ' · Asked for help' : ''}
                   </p>
                 </li>
               ))}
@@ -100,8 +104,39 @@ export function GrownUps({ onClose }: { onClose: () => void }) {
           )}
         </section>
 
+        {items.length > 0 && (
+          <section class="danger" aria-labelledby="del-h">
+            <h3 id="del-h" class="sr-only">Delete check-ins</h3>
+            {!confirming ? (
+              <button type="button" class="btn-secondary" onClick={() => setConfirming(true)}>
+                Delete all check-ins
+              </button>
+            ) : (
+              <div role="alert" class="confirm">
+                <p>Delete all {items.length} check-ins from this device? This can't be undone.</p>
+                <div class="confirm-actions">
+                  <button
+                    type="button"
+                    class="btn-danger"
+                    onClick={() => {
+                      clearCheckIns();
+                      setItems([]);
+                      setConfirming(false);
+                    }}
+                  >
+                    Delete all
+                  </button>
+                  <button type="button" class="btn-secondary" onClick={() => setConfirming(false)}>
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+          </section>
+        )}
+
         <section aria-labelledby="prefs-h">
-          <h2 id="prefs-h" class="h2">Preferences</h2>
+          <h2 id="prefs-h" class="h2 section-h">Preferences</h2>
           <label class="check-row">
             <input
               type="checkbox"
@@ -131,38 +166,16 @@ export function GrownUps({ onClose }: { onClose: () => void }) {
           </p>
         </section>
 
-        {items.length > 0 && (
-          <section class="danger" aria-labelledby="del-h">
-            <h2 id="del-h" class="sr-only">Delete history</h2>
-            {!confirming ? (
-              <button type="button" class="btn-secondary" onClick={() => setConfirming(true)}>
-                Delete all check-ins
-              </button>
-            ) : (
-              <div role="alert" class="confirm">
-                <p>Delete all {items.length} check-ins from this device? This can't be undone.</p>
-                <div class="confirm-actions">
-                  <button
-                    type="button"
-                    class="btn-danger"
-                    onClick={() => {
-                      clearCheckIns();
-                      setItems([]);
-                      setConfirming(false);
-                    }}
-                  >
-                    Delete all
-                  </button>
-                  <button type="button" class="btn-secondary" onClick={() => setConfirming(false)}>
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            )}
-          </section>
-        )}
+        <section aria-labelledby="install-h">
+          <h2 id="install-h" class="h2 section-h">Add to Home Screen</h2>
+          {isInstalled() ? (
+            <p class="meta">E-Feels is on this device's Home Screen.</p>
+          ) : (
+            <InstallSteps />
+          )}
+        </section>
 
-        <p class="meta version">E-Compass v{__APP_VERSION__}</p>
+        <p class="meta version">E-Feels v{__APP_VERSION__}</p>
       </main>
     </div>
   );

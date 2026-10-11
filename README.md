@@ -1,9 +1,12 @@
-# E-Compass
+# E-Feels
+
+(Formerly E-Compass. Saved data still uses `ecompass.*` keys so existing history is kept.)
 
 A home-screen web app (PWA) that helps non-verbal autistic kids find and share how they feel.
 It starts with one question, *comfortable or uncomfortable?*, and goes deeper one step at a time
-(body or feelings → where → what kind → how big). It ends with a feeling card the child can show
-to a grown-up, an optional calm-down step, and a private on-device history for caregivers.
+(body or feelings → where → what kind → how big). The child can stop at any point after the first
+question with **Finish questions**. It ends with a feeling card the child can show to a grown-up,
+an optional calm-down step, and a private on-device history for caregivers.
 
 ## Try it on iPhone / iPad
 
@@ -14,12 +17,16 @@ to a grown-up, an optional calm-down step, and a private on-device history for c
 History is saved **only on that device**. Deleting the home-screen icon deletes the history.
 
 **Grown-ups area:** press and hold **Grown-ups** on the first screen for 3 seconds.
-With VoiceOver on, double-tap and hold. It holds the check-in history and **Preferences**
-(turn the welcome screen back on, or reset preferences without touching history).
+With VoiceOver on, double-tap and hold. It holds the check-in history, **Preferences**
+(turn the welcome screen back on, or reset preferences without touching history), and
+Add to Home Screen steps.
 
-**Welcome screen:** shown when the app opens, until someone ticks *Don't show this again*.
-It is decided once per launch, so it never reappears mid-session or after a quiet update.
+**Welcome screen:** shown on first launch only. Grown-ups can turn it back on.
 In a Safari tab (not yet on the Home Screen) it also shows Add to Home Screen steps.
+
+**Saving:** a check-in is saved as soon as the feeling card appears (or a calm-down starts, or
+the child opens **I need help**). Later steps update the same entry, so Back never makes duplicates
+and a card shown to a grown-up is never lost.
 
 ## How it's built
 
@@ -53,6 +60,8 @@ npm run test:e2e   # Playwright + axe at iPhone SE (375×667) and iPad (820×118
 ## MVP decisions (Oct 2026)
 
 - Tapping a choice moves on; **Back** undoes. No Next button.
+- The path so far shows as buttons; tapping one jumps back to that question (answers after it are cleared).
+- "I'm not sure" opens a helper menu; "Not sure" moves to the next step.
 - Icons only on the first two questions; words only for nuanced terms.
 - No audio in the app (VoiceOver still works).
 - No accounts, no sync, no analytics, no backup.

@@ -12,8 +12,7 @@ export type View =
   | { kind: 'cope-list' }
   | { kind: 'cope'; itemId: string }
   | { kind: 'notsure' }
-  | { kind: 'help' }
-  | { kind: 'saved' };
+  | { kind: 'help' };
 
 export type Mood = 'comfortable' | 'uncomfortable' | 'unsure';
 
@@ -113,11 +112,20 @@ export function copingFor(frame: Frame): CopingSet | null {
   return vocab.coping.default;
 }
 
-/** Short labels for the "path so far" chips. */
-export function crumbs(frame: Frame): string[] {
-  const labels = frame.picked.map((p) => p.choice.label);
-  if (frame.size) labels.push(frame.size.label);
-  return labels.slice(-3);
+/**
+ * The "path so far": each choice's label plus the stack index of the
+ * question it was chosen on, so tapping it can jump straight back there.
+ * The stack is a linear history, so that question is the frame just
+ * before the first one holding the choice.
+ */
+export function crumbs(stack: Frame[]): { label: string; index: number }[] {
+  const frame = stack[stack.length - 1];
+  const out = frame.picked.map((p, k) => ({
+    label: p.choice.label,
+    index: stack.findIndex((f) => f.picked.length > k) - 1
+  }));
+  if (frame.size) out.push({ label: frame.size.label, index: stack.findIndex((f) => f.size !== null) - 1 });
+  return out.filter((c) => c.index >= 0);
 }
 
 export function toneOf(frame: Frame): 'comfortable' | 'uncomfortable' | 'neutral' {

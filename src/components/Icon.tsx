@@ -39,6 +39,10 @@ const paths: Record<IconName, preact.JSX.Element> = {
       <path d="M38 39l4 16" />
       <path d="M32 34.5s-6.5-3.8-6.5-8c0-2 1.6-3.6 3.5-3.6 1.3 0 2.4.7 3 1.7.6-1 1.7-1.7 3-1.7 1.9 0 3.5 1.6 3.5 3.6 0 4.2-6.5 8-6.5 8z" fill="currentColor" stroke="none" />
     </>
+  ),
+  // Raised hand, for "I need help".
+  hand: (
+    <path d="M21 35V15a4 4 0 0 1 8 0v14M29 27V11a4 4 0 0 1 8 0v18M37 28V15a4 4 0 0 1 8 0v20c0 11-7 21-18 21-8 0-12-4-16-11l-5-9a4 4 0 0 1 6.5-4.5L21 38" />
   )
 };
 

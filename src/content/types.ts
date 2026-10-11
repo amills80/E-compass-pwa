@@ -6,7 +6,7 @@ export type Token = '@continue' | '@size' | '@card' | '@notsure' | '@help';
 
 export type Group = 'mood' | 'body' | 'feel';
 
-export type IconName = 'comfortable' | 'uncomfortable' | 'body' | 'feelings' | 'both';
+export type IconName = 'comfortable' | 'uncomfortable' | 'body' | 'feelings' | 'both' | 'hand';
 
 export interface Choice {
   id: string;

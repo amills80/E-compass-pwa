@@ -17,7 +17,7 @@ async function openGrownUps(page: Page) {
   await page.mouse.down();
   await page.waitForTimeout(3300);
   await page.mouse.up();
-  await expect(heading(page)).toHaveText('Check-ins');
+  await expect(heading(page)).toHaveText('Grown-ups');
 }
 
 test.beforeEach(async ({ page }) => {
@@ -30,45 +30,35 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('shows on first launch, passes a11y checks, and Start goes to the first question', async ({ page }) => {
-  await expect(heading(page)).toHaveText(/Welcome to E.Compass/);
+  await expect(heading(page)).toHaveText(/Welcome to E.Feels/);
   await expect(heading(page)).toBeFocused();
   // Not running from the home screen in the test browser, so the install tip shows.
   await expect(page.getByRole('heading', { name: /add it to your Home Screen/ })).toBeVisible();
+  // Written for the grown-up setting up: no help button, no opt-out checkbox.
+  await expect(page.getByRole('button', { name: 'I need help' })).toHaveCount(0);
+  await expect(page.getByRole('checkbox')).toHaveCount(0);
   const r = await new AxeBuilder({ page }).withTags(WCAG).analyze();
   expect(r.violations.map((v) => v.id)).toEqual([]);
   await tap(page, 'Start');
   await expect(heading(page)).toHaveText('How do I feel?');
 });
 
-test('without the checkbox it shows again next launch, but not after Back to start', async ({ page }) => {
+test('shows once: not after a reload, not on the next launch', async ({ page }) => {
   await tap(page, 'Start');
-  await tap(page, "I'm not sure");
-  await tap(page, "Save: I'm not sure");
-  await tap(page, 'Done');
-  await tap(page, 'Back to start');
-  await expect(heading(page)).toHaveText('How do I feel?'); // same session: no welcome
-  await page.reload(); // e.g. a quiet update reload: still no welcome
+  await page.reload(); // e.g. a quiet update reload
   await expect(heading(page)).toHaveText('How do I feel?');
-  await relaunch(page);
-  await expect(heading(page)).toHaveText(/Welcome to E.Compass/);
-});
-
-test("'Don't show this again' sticks across launches", async ({ page }) => {
-  await page.getByRole('checkbox', { name: "Don’t show this again" }).check();
-  await tap(page, 'Start');
   await relaunch(page);
   await expect(heading(page)).toHaveText('How do I feel?');
 });
 
 test('grown-ups can turn it back on, and reset preferences without touching history', async ({ page }) => {
-  // Save one check-in and hide the welcome.
-  await page.getByRole('checkbox', { name: "Don’t show this again" }).check();
+  // Save one check-in.
   await tap(page, 'Start');
   await tap(page, 'Comfortable');
-  await tap(page, 'Not sure — skip');
-  await tap(page, 'Skip');
-  await tap(page, 'Done');
-  await tap(page, 'Back to start');
+  await tap(page, 'In my feelings');
+  await tap(page, 'Calm');
+  await tap(page, 'Not sure');
+  await tap(page, 'Finish');
 
   await openGrownUps(page);
   const toggle = page.getByRole('checkbox', { name: 'Show welcome screen when the app opens' });
@@ -76,10 +66,9 @@ test('grown-ups can turn it back on, and reset preferences without touching hist
   await toggle.check();
   await expect(page.getByRole('status')).toContainText('will show next time');
   await relaunch(page);
-  await expect(heading(page)).toHaveText(/Welcome to E.Compass/);
+  await expect(heading(page)).toHaveText(/Welcome to E.Feels/);
 
-  // Hide it again, then use Reset preferences.
-  await page.getByRole('checkbox', { name: "Don’t show this again" }).check();
+  // Start turns it off again; Reset preferences brings back the default.
   await tap(page, 'Start');
   await openGrownUps(page);
   await expect(toggle).not.toBeChecked();
@@ -87,15 +76,9 @@ test('grown-ups can turn it back on, and reset preferences without touching hist
   await expect(toggle).toBeChecked();
   await expect(page.getByRole('status')).toContainText('Check-ins were not changed');
   await expect(page.locator('.history-row')).toHaveCount(1);
+  await expect(page.getByRole('heading', { name: 'Add to Home Screen' })).toBeVisible();
   const r = await new AxeBuilder({ page }).withTags(WCAG).analyze();
   expect(r.violations.map((v) => v.id)).toEqual([]);
-});
-
-test('Help is reachable from the welcome screen', async ({ page }) => {
-  await tap(page, 'Help');
-  await expect(page.locator('.help-card')).toContainText('I need help.');
-  await tap(page, 'Close');
-  await expect(heading(page)).toHaveText(/Welcome to E.Compass/);
 });
 
 test('welcome fits at 200% text with no sideways scrolling', async ({ page }) => {

@@ -1,4 +1,4 @@
-/* E-Compass — calm, low-stimulation theme.
+/* E-Feels — calm, low-stimulation theme.
    Sizes are in rem so they follow iOS Dynamic Type (see html rule below). */
 
 :root {
@@ -151,7 +151,14 @@ h1:focus { outline: none; }
   gap: 0.4rem;
 }
 .btn-back { border: 2px solid var(--text); background: var(--surface); }
-.btn-help { background: var(--text); color: var(--bg); border-radius: 999px; }
+/* Easy to find, but outlined so it doesn't outshout the question. */
+.btn-help {
+  background: var(--surface);
+  border: 2.5px solid var(--uncomfy-edge);
+  border-radius: 999px;
+  text-align: left;
+}
+.btn-help .icon { flex-shrink: 0; color: var(--uncomfy-edge); }
 
 .crumbs {
   list-style: none;
@@ -160,14 +167,30 @@ h1:focus { outline: none; }
   gap: 0.4rem;
   margin: 0.25rem 0 0.25rem;
 }
+/* Each step jumps back to the question it was chosen on. */
 .chip {
-  font-size: 0.85rem;
+  min-height: 2.75rem;
+  max-width: 100%;
+  font-size: 0.95rem;
   font-weight: 600;
-  padding: 0.2rem 0.7rem;
+  padding: 0.3rem 0.85rem;
   border: 1.5px solid var(--border);
   border-radius: 999px;
-  color: var(--text-2);
+  color: var(--text);
   background: var(--surface);
+  text-align: left;
+  overflow-wrap: break-word;
+}
+.chip:active { background: var(--surface-2); }
+
+.notice {
+  margin: 0.5rem 0 0;
+  padding: 0.6rem 0.9rem;
+  border: 1.5px solid var(--comfy-edge);
+  border-radius: 0.9rem;
+  background: var(--comfy-tint);
+  font-size: 1.05rem;
+  font-weight: 700;
 }
 
 .content { flex: 1; display: flex; flex-direction: column; }
@@ -235,6 +258,16 @@ h1:focus { outline: none; }
 }
 .choices-big .choice-label { flex: none; width: 100%; font-size: 1.75rem; }
 
+.btn-link {
+  margin-top: 0.5rem;
+  min-height: 3rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
 .skip {
   margin-top: 1rem;
   min-height: 4rem;
@@ -267,6 +300,16 @@ h1:focus { outline: none; }
 }
 .feeling-card p { font-size: 1.5rem; font-weight: 700; line-height: 1.3; }
 .feeling-card .card-size { margin-top: 0.4rem; font-weight: 800; }
+.saved-tag {
+  align-self: center;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--comfy-edge);
+  border: 1.5px solid var(--comfy-edge);
+  border-radius: 999px;
+  padding: 0.1rem 0.75rem;
+}
+.saved-tag::before { content: "✓ "; }
 
 .actions { display: flex; flex-direction: column; gap: var(--gap); margin-top: auto; padding-top: 1rem; }
 .btn-primary {
@@ -276,6 +319,14 @@ h1:focus { outline: none; }
   color: var(--accent-text);
   font-size: 1.35rem;
   font-weight: 800;
+}
+/* The way out: present, but the quietest of the card's actions. */
+.btn-quiet {
+  min-height: 3.5rem;
+  border-radius: var(--radius);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-2);
 }
 
 /* ---------- Show + Help cards (full screen, inverse) ---------- */
@@ -355,6 +406,8 @@ h1:focus { outline: none; }
 
 /* ---------- Grown-ups history ---------- */
 .h2 { font-size: 1.15rem; font-weight: 800; margin: 1.5rem 0 0.6rem; }
+.h2.section-h { font-size: 1.35rem; margin-top: 2rem; }
+.h3 { font-size: 1.05rem; font-weight: 800; margin: 1.25rem 0 0.5rem; }
 .week { list-style: none; display: flex; gap: 0.5rem; align-items: flex-end; height: 7rem; }
 .week-day { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.3rem; height: 100%; }
 .week-bar {
@@ -427,7 +480,7 @@ h1:focus { outline: none; }
   border-radius: 1rem;
 }
 .install-tip .h2 { margin-top: 0.75rem; }
-.install-tip ol { padding-left: 1.4rem; display: flex; flex-direction: column; gap: 0.4rem; font-size: 1.05rem; }
+.install-steps { padding-left: 1.4rem; display: flex; flex-direction: column; gap: 0.4rem; font-size: 1.05rem; }
 .check-row {
   display: flex;
   align-items: center;

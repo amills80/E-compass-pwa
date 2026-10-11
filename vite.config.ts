@@ -14,8 +14,8 @@ export default defineConfig({
       injectRegister: false,
       includeAssets: ['apple-touch-icon.png', 'favicon.svg'],
       manifest: {
-        name: 'E-Compass',
-        short_name: 'E-Compass',
+        name: 'E-Feels',
+        short_name: 'E-Feels',
         description: 'Find and share how you feel.',
         start_url: '/',
         scope: '/',

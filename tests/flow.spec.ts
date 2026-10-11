@@ -12,6 +12,7 @@ const tap = (page: Page, name: string | RegExp) =>
   page.getByRole('button', { name, exact: typeof name === 'string' }).click();
 
 const heading = (page: Page) => page.getByRole('heading', { level: 1 });
+const cardText = (page: Page) => page.getByRole('group', { name: 'My feeling card' });
 
 async function holdGrownUps(page: Page) {
   const btn = page.getByRole('button', { name: /Grown-ups/ });
@@ -51,10 +52,10 @@ test('uncomfortable + both: body then feelings, card, coping, save, history', as
   await axe(page, 'size');
   await tap(page, 'A lot');
   await expect(heading(page)).toHaveText('My feeling card');
-  const card = page.getByRole('group', { name: 'My feeling card' });
-  await expect(card).toContainText('My tummy hurts.');
-  await expect(card).toContainText('I feel worried.');
-  await expect(card).toContainText('A lot.');
+  await expect(cardText(page)).toContainText('My tummy hurts.');
+  await expect(cardText(page)).toContainText('I feel worried.');
+  await expect(cardText(page)).toContainText('A lot.');
+  await expect(page.locator('.saved-tag')).toBeVisible();
   await axe(page, 'card');
 
   await tap(page, 'Show someone');
@@ -67,13 +68,15 @@ test('uncomfortable + both: body then feelings, card, coping, save, history', as
   await expect(page.getByRole('button', { name: /Breathe slowly/ })).toBeVisible(); // scared set
   await tap(page, /Breathe slowly/);
   await axe(page, 'breathe');
-  await tap(page, "I'm done");
-  await expect(heading(page)).toHaveText('Saved.');
+  await tap(page, 'I feel better');
+  // Finish goes straight back to the first question with a quiet confirmation.
+  await expect(heading(page)).toHaveText('How do I feel?');
+  await expect(page.locator('.notice')).toHaveText('Saved. Thanks for checking in.');
   await expect(page.getByRole('button', { name: 'Back', exact: true })).toHaveCount(0);
-  await tap(page, 'Back to start');
+  await axe(page, 'start after save');
 
   await holdGrownUps(page);
-  await expect(heading(page)).toHaveText('Check-ins');
+  await expect(heading(page)).toHaveText('Grown-ups');
   await expect(page.locator('.history-row')).toHaveCount(1);
   await expect(page.locator('.history-row')).toContainText('My tummy hurts. I feel worried.');
   await expect(page.locator('.history-row')).toContainText('Tried: breathe');
@@ -100,50 +103,140 @@ test('Back is an exact undo, including the Both queue', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'Back', exact: true })).toHaveCount(0);
 });
 
+test('tapping a step in the path jumps back to that question', async ({ page }) => {
+  await tap(page, 'Uncomfortable');
+  await tap(page, 'Both');
+  await tap(page, 'Tummy');
+  await tap(page, 'Tummy ache');
+  await expect(heading(page)).toHaveText('Which feeling?');
+  await expect(page.locator('.crumbs')).toHaveText(/Uncomfortable\s*Both\s*Tummy\s*Tummy ache/);
+  await tap(page, 'Go back to Both');
+  await expect(heading(page)).toHaveText('Where is it?');
+  await expect(page.locator('.crumbs')).toHaveText(/^\s*Uncomfortable\s*$/);
+  // Back still works as an exact undo from here.
+  await tap(page, 'Back');
+  await expect(heading(page)).toHaveText('How do I feel?');
+});
+
+test('Finish questions jumps to the card from the second question on, skipping the Both queue', async ({ page }) => {
+  await expect(page.getByRole('button', { name: 'Finish questions' })).toHaveCount(0); // not on the first question
+  await tap(page, 'Uncomfortable');
+  await tap(page, 'Both');
+  await tap(page, 'Tummy');
+  await tap(page, 'Finish questions');
+  await expect(heading(page)).toHaveText('My feeling card');
+  await expect(cardText(page)).toHaveText("My tummy doesn't feel good.");
+});
+
 test('comfortable: bouncy energy gets energy ideas, not "feel better"', async ({ page }) => {
   await tap(page, 'Comfortable');
   await tap(page, 'In my body');
   await tap(page, 'Bouncy energy');
-  await tap(page, 'Skip');
-  await expect(page.getByRole('group', { name: 'My feeling card' })).toContainText('I have bouncy energy.');
+  await tap(page, 'Not sure');
+  await expect(cardText(page)).toContainText('I have bouncy energy.');
   await expect(page.getByRole('button', { name: /Use my energy/ })).toBeVisible();
   await expect(page.getByRole('button', { name: /Help me feel better/ })).toHaveCount(0);
 });
 
-test('comfortable + calm: no coping button at all', async ({ page }) => {
+test('comfortable + calm: no coping button, just Finish', async ({ page }) => {
   await tap(page, 'Comfortable');
   await tap(page, 'In my feelings');
   await tap(page, 'Calm');
   await tap(page, 'Medium');
-  await expect(page.getByRole('group', { name: 'My feeling card' })).toContainText('I feel calm.');
-  await expect(page.locator('.actions .choice')).toHaveCount(1); // just Done
+  await expect(cardText(page)).toContainText('I feel calm.');
+  await expect(page.locator('.actions .choice')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Finish', exact: true })).toBeVisible();
+});
+
+test('comfortable path asks where I feel good, and the card does not repeat itself', async ({ page }) => {
+  await tap(page, 'Comfortable');
+  await expect(heading(page)).toHaveText('Where do I feel good?');
+  await tap(page, 'In my feelings');
+  await tap(page, 'Finish questions');
+  await expect(cardText(page)).toHaveText('I feel good inside.');
 });
 
 test('not sure is a valid answer and can be saved', async ({ page }) => {
   await tap(page, "I'm not sure");
-  await expect(heading(page)).toHaveText("That's OK.");
+  await expect(heading(page)).toHaveText("That's OK. What would help?");
   await axe(page, 'notsure');
-  await tap(page, "Save: I'm not sure");
-  await expect(page.getByRole('group', { name: 'My feeling card' })).toContainText("I'm not sure how I feel.");
-  await tap(page, 'Done');
-  await expect(heading(page)).toHaveText('Saved.');
+  await tap(page, 'Just save it');
+  await expect(cardText(page)).toContainText("I'm not sure how I feel.");
+  await tap(page, 'Finish');
+  await expect(heading(page)).toHaveText('How do I feel?');
+  await expect(page.locator('.notice')).toBeVisible();
 });
 
-test('skipping every level still makes a sensible card', async ({ page }) => {
+test("I'm not sure on Where is it? opens the same helper menu, which can check feelings", async ({ page }) => {
   await tap(page, 'Uncomfortable');
-  await tap(page, 'Not sure — skip');
-  await tap(page, 'Skip');
-  await expect(page.getByRole('group', { name: 'My feeling card' })).toContainText("I don't feel good.");
+  await tap(page, "I'm not sure");
+  await expect(heading(page)).toHaveText("That's OK. What would help?");
+  await tap(page, 'Check my feelings');
+  await expect(heading(page)).toHaveText('Which feeling?');
+  await tap(page, 'Back');
+  await tap(page, 'Just save it');
+  await expect(cardText(page)).toContainText("I don't feel good.");
 });
 
-test('Help works from a deep screen and Close returns to it', async ({ page }) => {
+test('skipping every detail level still makes a sensible card', async ({ page }) => {
+  await tap(page, 'Uncomfortable');
+  await tap(page, 'In my body');
+  await tap(page, 'Not sure');
+  await expect(heading(page)).toHaveText('How big is it?');
+  await tap(page, 'Not sure');
+  await expect(cardText(page)).toContainText("My body doesn't feel good.");
+});
+
+test('I need help works from a deep screen, Close returns to it, and it is saved', async ({ page }) => {
   await tap(page, 'Uncomfortable');
   await tap(page, 'In my feelings');
-  await tap(page, 'Help');
+  await tap(page, 'I need help');
   await expect(page.locator('.help-card')).toContainText('I need help.');
   await axe(page, 'help');
   await tap(page, 'Close');
   await expect(heading(page)).toHaveText('Which feeling?');
+  await page.reload(); // e.g. the iPad is put down
+  await holdGrownUps(page);
+  await expect(page.locator('.history-row')).toHaveCount(1);
+  await expect(page.locator('.history-row')).toContainText('Asked for help');
+});
+
+test('the check-in is saved as soon as the card appears, once, even after Back and changes', async ({ page }) => {
+  await tap(page, 'Uncomfortable');
+  await tap(page, 'In my feelings');
+  await tap(page, 'Sad');
+  await tap(page, 'Lonely');
+  await tap(page, 'A little');
+  await expect(page.locator('.saved-tag')).toBeVisible();
+  await tap(page, 'Back');
+  await tap(page, 'A lot');
+  await tap(page, 'Show someone');
+  await page.reload(); // shown to a grown-up, then the app is closed: nothing lost
+  await holdGrownUps(page);
+  await expect(page.locator('.history-row')).toHaveCount(1);
+  await expect(page.locator('.history-row')).toContainText('I feel lonely.');
+  await expect(page.locator('.history-row')).toContainText('A lot');
+});
+
+test('after a calm-down: try something else, or show my card', async ({ page }) => {
+  await tap(page, 'Uncomfortable');
+  await tap(page, 'In my feelings');
+  await tap(page, 'Mad');
+  await tap(page, 'Frustrated');
+  await tap(page, 'Medium');
+  await tap(page, /Help me feel better/);
+  await tap(page, /Push the wall/);
+  await tap(page, 'Try something else');
+  await expect(heading(page)).toHaveText('Try one?');
+  await tap(page, /Squeeze my hands/);
+  await tap(page, 'Show my card');
+  await expect(page.locator('.show-card')).toContainText('I feel frustrated.');
+  await tap(page, 'Close');
+  await expect(heading(page)).toHaveText('Squeeze my hands');
+  await tap(page, 'I feel better');
+  await holdGrownUps(page);
+  await expect(page.locator('.history-row')).toHaveCount(1);
+  await expect(page.locator('.history-row')).toContainText('Tried: squeeze');
 });
 
 test('every button is at least 44×44 pt', async ({ page }) => {
@@ -160,7 +253,7 @@ test('every button is at least 44×44 pt', async ({ page }) => {
   await tap(page, 'Uncomfortable');
   await check('where');
   await tap(page, 'In my body');
-  await check('body');
+  await check('body'); // includes the path buttons and Finish questions
 });
 
 test('200% text size: no sideways scrolling, nothing cut off', async ({ page }) => {

@@ -1,5 +1,12 @@
 import type { ComponentChildren } from 'preact';
 import { useEffect, useRef } from 'preact/hooks';
+import { Icon } from './Icon';
+
+export interface Crumb {
+  label: string;
+  /** Jump back to the question where this was chosen. */
+  onSelect: () => void;
+}
 
 interface ScreenProps {
   title: string;
@@ -7,9 +14,11 @@ interface ScreenProps {
   hideTitle?: boolean;
   onBack?: () => void;
   onHelp?: () => void;
-  crumbs?: string[];
+  crumbs?: Crumb[];
   tone?: 'comfortable' | 'uncomfortable' | 'neutral';
   variant?: 'default' | 'inverse';
+  /** A quiet status line above the heading, e.g. "Saved." */
+  notice?: string;
   /** Changes on every navigation so focus moves to the new heading. */
   viewKey: string;
   children: ComponentChildren;
@@ -17,7 +26,7 @@ interface ScreenProps {
 
 /**
  * Shared frame for every child-facing screen: Back always top-left,
- * Help always top-right, then the path chips, then one question.
+ * "I need help" always top-right, then the path so far, then one question.
  */
 export function Screen({
   title,
@@ -27,13 +36,14 @@ export function Screen({
   crumbs,
   tone = 'neutral',
   variant = 'default',
+  notice,
   viewKey,
   children
 }: ScreenProps) {
   const h1 = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
-    document.title = `${title} · E-Compass`;
+    document.title = `${title} · E-Feels`;
     // Move focus to the heading so VoiceOver announces the new screen.
     h1.current?.focus({ preventScroll: true });
     window.scrollTo(0, 0);
@@ -51,20 +61,28 @@ export function Screen({
         )}
         {onHelp && (
           <button type="button" class="btn-help" onClick={onHelp}>
-            Help
+            <Icon name="hand" size={22} />
+            I need help
           </button>
         )}
       </header>
       {crumbs && crumbs.length > 0 && (
         <ol class="crumbs" aria-label="My choices so far">
           {crumbs.map((c, i) => (
-            <li key={i} class="chip">
-              {c}
+            <li key={i}>
+              <button type="button" class="chip" aria-label={`Go back to ${c.label}`} onClick={c.onSelect}>
+                {c.label}
+              </button>
             </li>
           ))}
         </ol>
       )}
       <main class="content">
+        {notice && (
+          <p class="notice" role="status">
+            {notice}
+          </p>
+        )}
         <h1 ref={h1} tabIndex={-1} class={hideTitle ? 'sr-only' : 'q-title'}>
           {title}
         </h1>

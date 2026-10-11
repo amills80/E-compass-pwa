@@ -6,6 +6,7 @@ export interface Prefs {
   showWelcome: boolean;
 }
 
+// Old app name kept on purpose, like the check-ins key in storage.ts.
 const KEY = 'ecompass.prefs.v1';
 /** Set once the welcome is dismissed, so it isn't shown again in the same
  *  session (e.g. after a quiet update reloads the app). */

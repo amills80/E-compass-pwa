@@ -23,7 +23,7 @@
         { "id": "u-feelings", "label": "In my feelings", "icon": "feelings", "group": "feel", "phrase": "I have a hard feeling.", "next": "u-feel" },
         { "id": "u-both", "label": "Both", "icon": "both", "next": "u-body", "then": ["u-feel"] }
       ],
-      "skip": { "label": "Not sure — skip", "next": "@size" }
+      "skip": { "label": "I'm not sure", "next": "@notsure" }
     },
     "u-body": {
       "id": "u-body",
@@ -35,7 +35,7 @@
         { "id": "whole-body", "label": "Whole body", "phrase": "My body doesn't feel good.", "next": "u-whole" },
         { "id": "senses", "label": "Senses", "phrase": "Something is bothering my senses.", "next": "u-senses" }
       ],
-      "skip": { "label": "Not sure — skip", "next": "@continue" }
+      "skip": { "label": "Not sure", "next": "@continue" }
     },
     "u-head": {
       "id": "u-head",
@@ -46,7 +46,7 @@
         { "id": "dizzy", "label": "Dizzy", "phrase": "I feel dizzy." },
         { "id": "foggy", "label": "Foggy", "phrase": "My head feels foggy." }
       ],
-      "skip": { "label": "Not sure — skip", "next": "@continue" }
+      "skip": { "label": "Not sure", "next": "@continue" }
     },
     "u-tummy": {
       "id": "u-tummy",
@@ -58,7 +58,7 @@
         { "id": "hungry", "label": "Hungry", "phrase": "I'm hungry." },
         { "id": "bathroom", "label": "Need bathroom", "phrase": "I need the bathroom." }
       ],
-      "skip": { "label": "Not sure — skip", "next": "@continue" }
+      "skip": { "label": "Not sure", "next": "@continue" }
     },
     "u-whole": {
       "id": "u-whole",
@@ -70,7 +70,7 @@
         { "id": "hot-cold", "label": "Too hot or cold", "phrase": "I'm too hot or too cold." },
         { "id": "heart-pounding", "label": "Heart pounding", "phrase": "My heart is pounding." }
       ],
-      "skip": { "label": "Not sure — skip", "next": "@continue" }
+      "skip": { "label": "Not sure", "next": "@continue" }
     },
     "u-senses": {
       "id": "u-senses",
@@ -82,7 +82,7 @@
         { "id": "itchy", "label": "Itchy or scratchy", "phrase": "Something feels itchy or scratchy." },
         { "id": "smell-taste", "label": "Bad smell or taste", "phrase": "Something smells or tastes bad." }
       ],
-      "skip": { "label": "Not sure — skip", "next": "@continue" }
+      "skip": { "label": "Not sure", "next": "@continue" }
     },
     "u-feel": {
       "id": "u-feel",
@@ -94,7 +94,7 @@
         { "id": "sad", "label": "Sad", "phrase": "I feel sad.", "next": "u-sad" },
         { "id": "overwhelmed", "label": "Overwhelmed", "phrase": "I feel overwhelmed.", "next": "u-over" }
       ],
-      "skip": { "label": "Not sure — skip", "next": "@continue" }
+      "skip": { "label": "Not sure", "next": "@continue" }
     },
     "u-scared": {
       "id": "u-scared",
@@ -105,7 +105,7 @@
         { "id": "nervous", "label": "Nervous", "phrase": "I feel nervous." },
         { "id": "panicky", "label": "Panicky", "phrase": "I feel panicky." }
       ],
-      "skip": { "label": "Not sure — skip", "next": "@continue" }
+      "skip": { "label": "Not sure", "next": "@continue" }
     },
     "u-mad": {
       "id": "u-mad",
@@ -116,7 +116,7 @@
         { "id": "frustrated", "label": "Frustrated", "phrase": "I feel frustrated." },
         { "id": "furious", "label": "Furious", "phrase": "I feel furious." }
       ],
-      "skip": { "label": "Not sure — skip", "next": "@continue" }
+      "skip": { "label": "Not sure", "next": "@continue" }
     },
     "u-sad": {
       "id": "u-sad",
@@ -127,7 +127,7 @@
         { "id": "disappointed", "label": "Disappointed", "phrase": "I feel disappointed." },
         { "id": "hurt-feelings", "label": "Hurt feelings", "phrase": "My feelings are hurt." }
       ],
-      "skip": { "label": "Not sure — skip", "next": "@continue" }
+      "skip": { "label": "Not sure", "next": "@continue" }
     },
     "u-over": {
       "id": "u-over",
@@ -138,19 +138,19 @@
         { "id": "things-changed", "label": "Things changed", "phrase": "Things changed." },
         { "id": "too-many-people", "label": "Too many people", "phrase": "There are too many people." }
       ],
-      "skip": { "label": "Not sure — skip", "next": "@continue" }
+      "skip": { "label": "Not sure", "next": "@continue" }
     },
 
     "c-where": {
       "id": "c-where",
-      "title": "Where is it?",
+      "title": "Where do I feel good?",
       "group": "mood",
       "choices": [
         { "id": "c-body", "label": "In my body", "icon": "body", "group": "body", "phrase": "My body feels good.", "next": "c-body" },
-        { "id": "c-feelings", "label": "In my feelings", "icon": "feelings", "group": "feel", "phrase": "I feel good.", "next": "c-feel" },
+        { "id": "c-feelings", "label": "In my feelings", "icon": "feelings", "group": "feel", "phrase": "I feel good inside.", "next": "c-feel" },
         { "id": "c-both", "label": "Both", "icon": "both", "next": "c-body", "then": ["c-feel"] }
       ],
-      "skip": { "label": "Not sure — skip", "next": "@size" }
+      "skip": { "label": "I'm not sure", "next": "@notsure" }
     },
     "c-body": {
       "id": "c-body",
@@ -162,7 +162,7 @@
         { "id": "cozy", "label": "Cozy or sleepy", "phrase": "I feel cozy." },
         { "id": "strong", "label": "Strong", "phrase": "I feel strong." }
       ],
-      "skip": { "label": "Not sure — skip", "next": "@continue" }
+      "skip": { "label": "Not sure", "next": "@continue" }
     },
     "c-feel": {
       "id": "c-feel",
@@ -174,7 +174,7 @@
         { "id": "excited", "label": "Excited", "phrase": "I feel excited." },
         { "id": "proud", "label": "Proud or loved", "phrase": "I feel proud and loved." }
       ],
-      "skip": { "label": "Not sure — skip", "next": "@continue" }
+      "skip": { "label": "Not sure", "next": "@continue" }
     }
   },
 
@@ -185,7 +185,7 @@
       { "id": "medium", "label": "Medium", "level": 2 },
       { "id": "a-lot", "label": "A lot", "level": 3 }
     ],
-    "skip": "Skip"
+    "skip": "Not sure"
   },
 
   "fallback": {

@@ -16,8 +16,12 @@ export interface CheckIn {
   sentences: string[];
   size: string | null;
   coping: string | null;
+  /** The child opened the "I need help" card during this check-in. */
+  askedHelp?: boolean;
 }
 
+// Named from the app's old name (E-Compass). Don't rename: devices already
+// using the app would lose their history.
 const KEY = 'ecompass.checkins.v1';
 
 function safeRead(): CheckIn[] {
@@ -52,6 +56,15 @@ export function saveCheckIn(c: Omit<CheckIn, 'id' | 'at'>): CheckIn | null {
   };
   const ok = safeWrite([entry, ...safeRead()]);
   return ok ? entry : null;
+}
+
+/** Merge changes into a saved check-in. Returns false if it no longer exists. */
+export function updateCheckIn(id: string, patch: Partial<Omit<CheckIn, 'id' | 'at'>>): boolean {
+  const list = safeRead();
+  const i = list.findIndex((c) => c.id === id);
+  if (i < 0) return false;
+  list[i] = { ...list[i], ...patch };
+  return safeWrite(list);
 }
 
 export function clearCheckIns(): void {
