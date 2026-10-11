@@ -3,16 +3,36 @@ import AxeBuilder from '@axe-core/playwright';
 
 const WCAG = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 
+/** Let screen transitions finish first: mid-fade text has lower contrast. */
+async function settle(page: Page) {
+  await page.evaluate(() =>
+    Promise.all(
+      document
+        .getAnimations()
+        .filter((a) => {
+          const t = a.effect?.getTiming();
+          // Screen transitions only; the slow breathing guide keeps going.
+          return t?.iterations !== Infinity && Number(t?.duration) < 2000;
+        })
+        .map((a) => a.finished.catch(() => undefined))
+    )
+  );
+}
+
 async function axe(page: Page, label: string) {
+  await settle(page);
   const r = await new AxeBuilder({ page }).withTags(WCAG).analyze();
   expect(r.violations.map((v) => `${label}: ${v.id} (${v.nodes.length})`)).toEqual([]);
 }
 
-const tap = (page: Page, name: string | RegExp) =>
-  page.getByRole('button', { name, exact: typeof name === 'string' }).click();
-
 const heading = (page: Page) => page.getByRole('heading', { level: 1 });
-const cardText = (page: Page) => page.getByRole('group', { name: 'My feeling card' });
+const card = (page: Page) => page.getByRole('group', { name: 'My feeling card' });
+
+/** Tap a button by its exact name, then wait for the next screen's heading. */
+async function tap(page: Page, name: string, next?: string | RegExp) {
+  await page.getByRole('button', { name, exact: true }).click();
+  if (next) await expect(heading(page)).toHaveText(next);
+}
 
 async function holdGrownUps(page: Page) {
   const btn = page.getByRole('button', { name: /Grown-ups/ });
@@ -20,6 +40,7 @@ async function holdGrownUps(page: Page) {
   await page.mouse.down();
   await page.waitForTimeout(3300);
   await page.mouse.up();
+  await expect(heading(page)).toHaveText('Grown-ups');
 }
 
 test.beforeEach(async ({ page }) => {
@@ -30,210 +51,230 @@ test.beforeEach(async ({ page }) => {
     localStorage.setItem('ecompass.prefs.v1', JSON.stringify({ showWelcome: false }));
   });
   await page.reload();
+  await expect(heading(page)).toHaveText('How do I feel?');
 });
 
-test('uncomfortable + both: body then feelings, card, coping, save, history', async ({ page }) => {
-  await expect(heading(page)).toHaveText('How do I feel?');
+test('not good → family → ladder word → two causes → card → breathing → saved → history', async ({ page }) => {
   await axe(page, 'start');
-  await tap(page, 'Uncomfortable');
-  await expect(heading(page)).toHaveText('Where is it?');
-  await axe(page, 'where');
-  await tap(page, 'Both');
-  await expect(heading(page)).toHaveText('Where in my body?');
-  await tap(page, 'Tummy');
-  await expect(heading(page)).toHaveText('What kind?');
-  await axe(page, 'tummy');
-  await tap(page, 'Tummy ache');
-  // "Both" queues the feelings question after the body questions.
-  await expect(heading(page)).toHaveText('Which feeling?');
-  await tap(page, 'Scared');
-  await tap(page, 'Worried');
-  await expect(heading(page)).toHaveText('How big is it?');
-  await axe(page, 'size');
-  await tap(page, 'A lot');
-  await expect(heading(page)).toHaveText('My feeling card');
-  await expect(cardText(page)).toContainText('My tummy hurts.');
-  await expect(cardText(page)).toContainText('I feel worried.');
-  await expect(cardText(page)).toContainText('A lot.');
-  await expect(page.locator('.saved-tag')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Calm', exact: true })).toBeVisible();
+  await tap(page, 'Not good', 'Which feeling?');
+  await axe(page, 'family');
+  await tap(page, 'Mad', 'What kind of mad?');
+  await axe(page, 'word');
+  await tap(page, 'Annoyed', 'What made it happen?');
+  await axe(page, 'cause kind');
+  await tap(page, 'My body', "What's happening in my body?");
+  await axe(page, 'cause list');
+  await tap(page, 'Headache', 'Anything else?');
+  await expect(card(page)).toHaveText(/I feel annoyed\s*because my head hurts\./);
+  await axe(page, 'anything else');
+  await tap(page, 'Add another', 'What else?');
+  await tap(page, 'My senses', "What's bothering my senses?");
+  await tap(page, 'Too loud', 'Anything else?');
+  await expect(card(page)).toHaveText(/because my head hurts and it's too loud\./);
+  await tap(page, "That's all", 'My feeling card');
   await axe(page, 'card');
 
   await tap(page, 'Show someone');
-  await expect(page.locator('.show-card')).toContainText('I feel worried.');
-  await axe(page, 'show');
-  await tap(page, 'Close');
+  await expect(page.locator('.show-card')).toContainText("I feel annoyed because my head hurts and it's too loud.");
+  await tap(page, 'Close', 'My feeling card');
 
-  await tap(page, /Help me feel better/);
-  await expect(heading(page)).toHaveText('Try one?');
-  await expect(page.getByRole('button', { name: /Breathe slowly/ })).toBeVisible(); // scared set
-  await tap(page, /Breathe slowly/);
-  await axe(page, 'breathe');
-  await tap(page, 'I feel better');
-  // Finish goes straight back to the first question with a quiet confirmation.
-  await expect(heading(page)).toHaveText('How do I feel?');
+  await tap(page, 'Help me feel better', 'Try one?');
+  await expect(page.getByRole('button', { name: 'Push the wall' })).toBeVisible(); // mad set first
+  await tap(page, 'Breathe with the dot', 'Breathe with the dot');
+  await expect(page.locator('.sphere.is-homeward')).toHaveCount(1);
+  await axe(page, 'breathing');
+  await tap(page, 'Stop');
+  await expect(page.locator('.sphere.is-paused')).toHaveCount(1);
+  await tap(page, 'I feel better', 'How do I feel?');
   await expect(page.locator('.notice')).toHaveText('Saved. Thanks for checking in.');
   await expect(page.getByRole('button', { name: 'Back', exact: true })).toHaveCount(0);
-  await axe(page, 'start after save');
 
   await holdGrownUps(page);
-  await expect(heading(page)).toHaveText('Grown-ups');
-  await expect(page.locator('.history-row')).toHaveCount(1);
-  await expect(page.locator('.history-row')).toContainText('My tummy hurts. I feel worried.');
-  await expect(page.locator('.history-row')).toContainText('Tried: breathe');
+  const row = page.locator('.history-row');
+  await expect(row).toHaveCount(1);
+  await expect(row).toContainText("I feel annoyed because my head hurts and it's too loud.");
+  await expect(row).toContainText('Not good');
+  await expect(row).toContainText('Tried: breathe');
   await axe(page, 'history');
 });
 
-test('Back is an exact undo, including the Both queue', async ({ page }) => {
-  await tap(page, 'Uncomfortable');
-  await tap(page, 'Both');
-  await tap(page, 'Head');
-  await tap(page, 'Back');
-  await expect(heading(page)).toHaveText('Where in my body?');
-  await expect(page.locator('.crumbs')).toHaveText(/Uncomfortable\s*Both/);
-  await tap(page, 'Back');
-  await tap(page, 'In my body'); // no feelings question queued this time
-  await tap(page, 'Head');
-  await tap(page, 'Headache');
-  await expect(heading(page)).toHaveText('How big is it?');
-  await tap(page, 'Back');
-  await tap(page, 'Back');
-  await tap(page, 'Back');
-  await tap(page, 'Back');
-  await expect(heading(page)).toHaveText('How do I feel?');
+test('a tapped choice shows as picked before moving on', async ({ page }) => {
+  const good = page.getByRole('button', { name: 'Good', exact: true });
+  await good.click();
+  await expect(good).toHaveAttribute('aria-pressed', 'true');
+  await expect(heading(page)).toHaveText('Which feeling?');
+});
+
+test('Back is an exact undo, including the last cause added', async ({ page }) => {
+  await tap(page, 'Not good', 'Which feeling?');
+  await tap(page, 'Mad', 'What kind of mad?');
+  await tap(page, 'Annoyed', 'What made it happen?');
+  await tap(page, 'My body', "What's happening in my body?");
+  await tap(page, 'Headache', 'Anything else?');
+  await tap(page, 'Back', "What's happening in my body?");
+  await expect(page.getByRole('button', { name: 'Headache', exact: true })).toBeVisible();
+  await expect(page.locator('.crumbs')).toHaveText(/Not good\s*Mad\s*Annoyed/);
+  await tap(page, 'Back', 'What made it happen?');
+  await tap(page, 'Back', 'What kind of mad?');
+  await tap(page, 'Back', 'Which feeling?');
+  await tap(page, 'Back', 'How do I feel?');
   await expect(page.getByRole('button', { name: 'Back', exact: true })).toHaveCount(0);
 });
 
-test('tapping a step in the path jumps back to that question', async ({ page }) => {
-  await tap(page, 'Uncomfortable');
-  await tap(page, 'Both');
-  await tap(page, 'Tummy');
-  await tap(page, 'Tummy ache');
-  await expect(heading(page)).toHaveText('Which feeling?');
-  await expect(page.locator('.crumbs')).toHaveText(/Uncomfortable\s*Both\s*Tummy\s*Tummy ache/);
-  await tap(page, 'Go back to Both');
-  await expect(heading(page)).toHaveText('Where is it?');
-  await expect(page.locator('.crumbs')).toHaveText(/^\s*Uncomfortable\s*$/);
-  // Back still works as an exact undo from here.
-  await tap(page, 'Back');
-  await expect(heading(page)).toHaveText('How do I feel?');
+test('calm sits at the center and goes straight to causes', async ({ page }) => {
+  await tap(page, 'Calm', 'What made it happen?');
+  await expect(page.locator('.calm-glow')).toHaveCount(1);
+  // Good things are offered first when things are calm or good.
+  await expect(page.locator('.choices .choice').first()).toHaveText(/Something good happened/);
+  await tap(page, 'Something good happened', 'What happened?');
+  await tap(page, 'A quiet, comfy place', 'Anything else?');
+  await tap(page, "That's all", 'My feeling card');
+  await expect(card(page)).toHaveText(/I feel calm\s*because I'm in a quiet, comfy place\./);
 });
 
-test('Finish questions jumps to the card from the second question on, skipping the Both queue', async ({ page }) => {
-  await expect(page.getByRole('button', { name: 'Finish questions' })).toHaveCount(0); // not on the first question
-  await tap(page, 'Uncomfortable');
-  await tap(page, 'Both');
-  await tap(page, 'Tummy');
-  await tap(page, 'Finish questions');
-  await expect(heading(page)).toHaveText('My feeling card');
-  await expect(cardText(page)).toHaveText("My tummy doesn't feel good.");
+test('flavor word asks how big and builds the sentence', async ({ page }) => {
+  await tap(page, 'Good', 'Which feeling?');
+  await tap(page, 'Proud', 'What kind of proud?');
+  await tap(page, 'Loved', 'How big is it?');
+  await tap(page, 'A lot', 'What made it happen?');
+  await tap(page, 'Not sure why', 'My feeling card');
+  await expect(card(page)).toHaveText('I feel very loved.');
+  await expect(page.locator('.actions .choice')).toHaveCount(0); // no calm-down needed
+  await expect(page.getByRole('button', { name: 'Finish', exact: true })).toBeVisible();
 });
 
-test('comfortable: bouncy energy gets energy ideas, not "feel better"', async ({ page }) => {
-  await tap(page, 'Comfortable');
-  await tap(page, 'In my body');
-  await tap(page, 'Bouncy energy');
-  await tap(page, 'Not sure');
-  await expect(cardText(page)).toContainText('I have bouncy energy.');
+test('a big excited feeling offers energy ideas, not "feel better"', async ({ page }) => {
+  await tap(page, 'Good', 'Which feeling?');
+  await tap(page, 'Excited', 'What kind of excited?');
+  await tap(page, 'Bouncy', 'What made it happen?');
+  await tap(page, 'Not sure why', 'My feeling card');
   await expect(page.getByRole('button', { name: /Use my energy/ })).toBeVisible();
   await expect(page.getByRole('button', { name: /Help me feel better/ })).toHaveCount(0);
 });
 
-test('comfortable + calm: no coping button, just Finish', async ({ page }) => {
-  await tap(page, 'Comfortable');
-  await tap(page, 'In my feelings');
-  await tap(page, 'Calm');
-  await tap(page, 'Medium');
-  await expect(cardText(page)).toContainText('I feel calm.');
-  await expect(page.locator('.actions .choice')).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Finish', exact: true })).toBeVisible();
-});
-
-test('comfortable path asks where I feel good, and the card does not repeat itself', async ({ page }) => {
-  await tap(page, 'Comfortable');
-  await expect(heading(page)).toHaveText('Where do I feel good?');
-  await tap(page, 'In my feelings');
-  await tap(page, 'Finish questions');
-  await expect(cardText(page)).toHaveText('I feel good inside.');
-});
-
 test('not sure is a valid answer and can be saved', async ({ page }) => {
-  await tap(page, "I'm not sure");
-  await expect(heading(page)).toHaveText("That's OK. What would help?");
+  await tap(page, "I'm not sure", "That's OK. What would help?");
   await axe(page, 'notsure');
-  await tap(page, 'Just save it');
-  await expect(cardText(page)).toContainText("I'm not sure how I feel.");
-  await tap(page, 'Finish');
-  await expect(heading(page)).toHaveText('How do I feel?');
+  await tap(page, 'Just save it', 'My feeling card');
+  await expect(card(page)).toHaveText("I'm not sure how I feel.");
+  await tap(page, 'Finish', 'How do I feel?');
   await expect(page.locator('.notice')).toBeVisible();
 });
 
-test("I'm not sure on Where is it? opens the same helper menu, which can check feelings", async ({ page }) => {
-  await tap(page, 'Uncomfortable');
-  await tap(page, "I'm not sure");
-  await expect(heading(page)).toHaveText("That's OK. What would help?");
-  await tap(page, 'Check my feelings');
-  await expect(heading(page)).toHaveText('Which feeling?');
-  await tap(page, 'Back');
-  await tap(page, 'Just save it');
-  await expect(cardText(page)).toContainText("I don't feel good.");
+test('skipping every step still makes a sensible card', async ({ page }) => {
+  await tap(page, 'Not good', 'Which feeling?');
+  await tap(page, 'Not sure', 'What made it happen?');
+  await tap(page, 'Not sure why', 'My feeling card');
+  await expect(card(page)).toHaveText("I don't feel good.");
 });
 
-test('skipping every detail level still makes a sensible card', async ({ page }) => {
-  await tap(page, 'Uncomfortable');
-  await tap(page, 'In my body');
-  await tap(page, 'Not sure');
-  await expect(heading(page)).toHaveText('How big is it?');
-  await tap(page, 'Not sure');
-  await expect(cardText(page)).toContainText("My body doesn't feel good.");
+test('safety cause opens the grown-up card, puts Get a grown-up first, and marks history', async ({ page }) => {
+  await tap(page, 'Not good', 'Which feeling?');
+  await tap(page, 'Not sure', 'What made it happen?');
+  await tap(page, 'Something hard happened', 'What happened?');
+  await tap(page, 'Someone hurt or scared me');
+  await expect(page.locator('.help-card')).toContainText('I need a grown-up I trust.');
+  await axe(page, 'safety');
+  await tap(page, 'Close', 'Anything else?');
+  await tap(page, "That's all", 'My feeling card');
+  await tap(page, 'Help me feel better', 'Try one?');
+  await expect(page.locator('.choices .choice').first()).toHaveText(/Get a grown-up/);
+  await tap(page, 'Back', 'My feeling card');
+  await tap(page, 'Finish', 'How do I feel?');
+  await holdGrownUps(page);
+  await expect(page.locator('.safety-tag')).toHaveCount(1);
+});
+
+test('long cause lists show four at a time, and picked causes disappear', async ({ page }) => {
+  await tap(page, 'Not good', 'Which feeling?');
+  await tap(page, 'Not sure', 'What made it happen?');
+  await tap(page, 'My body', "What's happening in my body?");
+  await expect(page.locator('.choices .choice')).toHaveCount(4);
+  await tap(page, 'More choices', "What's happening in my body?");
+  await expect(page.getByRole('button', { name: 'Feel sick', exact: true })).toBeVisible();
+  await tap(page, 'Back', "What's happening in my body?");
+  await tap(page, 'Headache', 'Anything else?');
+  await tap(page, 'Add another', 'What else?');
+  await tap(page, 'My body', "What's happening in my body?");
+  await expect(page.getByRole('button', { name: 'Headache', exact: true })).toHaveCount(0);
+  await expect(page.locator('.choices .choice').first()).toHaveText(/Tummy ache/);
 });
 
 test('I need help works from a deep screen, Close returns to it, and it is saved', async ({ page }) => {
-  await tap(page, 'Uncomfortable');
-  await tap(page, 'In my feelings');
+  await tap(page, 'Not good', 'Which feeling?');
   await tap(page, 'I need help');
   await expect(page.locator('.help-card')).toContainText('I need help.');
   await axe(page, 'help');
-  await tap(page, 'Close');
-  await expect(heading(page)).toHaveText('Which feeling?');
+  await tap(page, 'Close', 'Which feeling?');
   await page.reload(); // e.g. the iPad is put down
   await holdGrownUps(page);
   await expect(page.locator('.history-row')).toHaveCount(1);
   await expect(page.locator('.history-row')).toContainText('Asked for help');
 });
 
+test('tapping a step in the path jumps back to that question', async ({ page }) => {
+  await tap(page, 'Not good', 'Which feeling?');
+  await tap(page, 'Sad', 'What kind of sad?');
+  await tap(page, 'Down', 'What made it happen?');
+  await tap(page, 'My body', "What's happening in my body?");
+  await tap(page, 'Tired', 'Anything else?');
+  await expect(page.locator('.crumbs')).toHaveText(/Not good\s*Sad\s*Down\s*Tired/);
+  await tap(page, 'Go back to Sad', 'Which feeling?');
+  await expect(page.locator('.crumbs')).toHaveText(/^\s*Not good\s*$/);
+  // Back still works as an exact undo from here.
+  await tap(page, 'Back', 'How do I feel?');
+});
+
+test('Finish questions jumps to the card from the second question on', async ({ page }) => {
+  await expect(page.getByRole('button', { name: 'Finish questions' })).toHaveCount(0); // not on the first question
+  await tap(page, 'Not good', 'Which feeling?');
+  await tap(page, 'Scared', 'What kind of scared?');
+  await tap(page, 'Finish questions', 'My feeling card');
+  await expect(card(page)).toHaveText('I feel scared.');
+});
+
+test("the helper menu can go back to the feelings question", async ({ page }) => {
+  await tap(page, "I'm not sure", "That's OK. What would help?");
+  await tap(page, 'Check my feelings', 'How do I feel?');
+  await tap(page, 'Good', 'Which feeling?');
+  await tap(page, 'Back', 'How do I feel?');
+  await tap(page, 'Back', "That's OK. What would help?");
+  await tap(page, 'Check my body', "What's happening in my body?");
+});
+
 test('the check-in is saved as soon as the card appears, once, even after Back and changes', async ({ page }) => {
-  await tap(page, 'Uncomfortable');
-  await tap(page, 'In my feelings');
-  await tap(page, 'Sad');
-  await tap(page, 'Lonely');
-  await tap(page, 'A little');
+  await tap(page, 'Not good', 'Which feeling?');
+  await tap(page, 'Sad', 'What kind of sad?');
+  await tap(page, 'Lonely', 'How big is it?');
+  await tap(page, 'A little', 'What made it happen?');
+  await tap(page, 'Not sure why', 'My feeling card');
   await expect(page.locator('.saved-tag')).toBeVisible();
-  await tap(page, 'Back');
-  await tap(page, 'A lot');
+  await tap(page, 'Back', 'What made it happen?');
+  await tap(page, 'Back', 'How big is it?');
+  await tap(page, 'A lot', 'What made it happen?');
+  await tap(page, 'Not sure why', 'My feeling card');
   await tap(page, 'Show someone');
   await page.reload(); // shown to a grown-up, then the app is closed: nothing lost
   await holdGrownUps(page);
   await expect(page.locator('.history-row')).toHaveCount(1);
-  await expect(page.locator('.history-row')).toContainText('I feel lonely.');
+  await expect(page.locator('.history-row')).toContainText('I feel very lonely.');
   await expect(page.locator('.history-row')).toContainText('A lot');
 });
 
 test('after a calm-down: try something else, or show my card', async ({ page }) => {
-  await tap(page, 'Uncomfortable');
-  await tap(page, 'In my feelings');
-  await tap(page, 'Mad');
-  await tap(page, 'Frustrated');
-  await tap(page, 'Medium');
-  await tap(page, /Help me feel better/);
-  await tap(page, /Push the wall/);
-  await tap(page, 'Try something else');
-  await expect(heading(page)).toHaveText('Try one?');
-  await tap(page, /Squeeze my hands/);
+  await tap(page, 'Not good', 'Which feeling?');
+  await tap(page, 'Mad', 'What kind of mad?');
+  await tap(page, 'Frustrated', 'What made it happen?');
+  await tap(page, 'Not sure why', 'My feeling card');
+  await tap(page, 'Help me feel better', 'Try one?');
+  await tap(page, 'Push the wall', 'Push the wall');
+  await tap(page, 'Try something else', 'Try one?');
+  await tap(page, 'Squeeze my hands', 'Squeeze my hands');
   await tap(page, 'Show my card');
   await expect(page.locator('.show-card')).toContainText('I feel frustrated.');
-  await tap(page, 'Close');
-  await expect(heading(page)).toHaveText('Squeeze my hands');
-  await tap(page, 'I feel better');
+  await tap(page, 'Close', 'Squeeze my hands');
+  await tap(page, 'I feel better', 'How do I feel?');
   await holdGrownUps(page);
   await expect(page.locator('.history-row')).toHaveCount(1);
   await expect(page.locator('.history-row')).toContainText('Tried: squeeze');
@@ -250,18 +291,30 @@ test('every button is at least 44×44 pt', async ({ page }) => {
     expect(small, label).toEqual([]);
   };
   await check('start');
-  await tap(page, 'Uncomfortable');
-  await check('where');
-  await tap(page, 'In my body');
-  await check('body'); // includes the path buttons and Finish questions
+  await tap(page, 'Not good', 'Which feeling?');
+  await check('family');
+  await tap(page, 'Sad', 'What kind of sad?');
+  await check('word');
+  await tap(page, 'Down', 'What made it happen?');
+  await tap(page, 'My body', "What's happening in my body?");
+  await tap(page, 'Tired', 'Anything else?');
+  await check('anything else');
 });
 
-test('200% text size: no sideways scrolling, nothing cut off', async ({ page }) => {
+test('200% text size: no sideways scrolling', async ({ page }) => {
   await page.addStyleTag({ content: 'html { font-size: 200% !important; }' });
-  for (const step of [null, 'Uncomfortable', 'In my feelings', 'Overwhelmed']) {
-    if (step) await tap(page, step);
-    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
-    expect(overflow, `after ${step ?? 'start'}`).toBeLessThanOrEqual(0);
+  const steps: [string, string][] = [
+    ['Not good', 'Which feeling?'],
+    ['Overwhelmed', 'What kind of overwhelmed?'],
+    ['Overloaded', 'What made it happen?'],
+    ['Something hard happened', 'What happened?'],
+    ["Didn't get what I wanted", 'Anything else?']
+  ];
+  const overflow = () => page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  expect(await overflow(), 'start').toBeLessThanOrEqual(0);
+  for (const [name, next] of steps) {
+    await tap(page, name, next);
+    expect(await overflow(), `after ${name}`).toBeLessThanOrEqual(0);
   }
 });
 
@@ -269,9 +322,25 @@ test.describe('dark mode', () => {
   test.use({ colorScheme: 'dark' });
   test('passes contrast and a11y checks', async ({ page }) => {
     await axe(page, 'dark start');
-    await tap(page, 'Uncomfortable');
-    await tap(page, 'In my body');
-    await axe(page, 'dark body');
+    await tap(page, 'Not good', 'Which feeling?');
+    await axe(page, 'dark family');
+    await tap(page, 'Scared', 'What kind of scared?');
+    await axe(page, 'dark word');
+  });
+});
+
+test.describe('reduce motion', () => {
+  test.use({ contextOptions: { reducedMotion: 'reduce' } });
+  test('breathing moves the dot home one step per tap', async ({ page }) => {
+    await tap(page, 'Not good', 'Which feeling?');
+    await tap(page, 'Scared', 'What kind of scared?');
+    await tap(page, 'Panicky', 'What made it happen?');
+    await tap(page, 'Not sure why', 'My feeling card');
+    await tap(page, 'Help me feel better', 'Try one?');
+    await tap(page, 'Breathe with the dot', 'Breathe with the dot');
+    await expect(page.locator('.sphere.is-homeward')).toHaveCount(0);
+    for (let i = 0; i < 4; i++) await tap(page, 'Next breath');
+    await expect(page.getByRole('button', { name: 'Your dot is home' })).toBeDisabled();
   });
 });
 

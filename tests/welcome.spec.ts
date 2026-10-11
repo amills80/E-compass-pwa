@@ -54,11 +54,14 @@ test('shows once: not after a reload, not on the next launch', async ({ page }) 
 test('grown-ups can turn it back on, and reset preferences without touching history', async ({ page }) => {
   // Save one check-in.
   await tap(page, 'Start');
-  await tap(page, 'Comfortable');
-  await tap(page, 'In my feelings');
-  await tap(page, 'Calm');
+  await tap(page, 'Good');
+  await expect(heading(page)).toHaveText('Which feeling?');
   await tap(page, 'Not sure');
+  await expect(heading(page)).toHaveText('What made it happen?');
+  await tap(page, 'Not sure why');
+  await expect(heading(page)).toHaveText('My feeling card');
   await tap(page, 'Finish');
+  await expect(heading(page)).toHaveText('How do I feel?');
 
   await openGrownUps(page);
   const toggle = page.getByRole('checkbox', { name: 'Show welcome screen when the app opens' });

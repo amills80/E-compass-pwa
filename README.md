@@ -3,10 +3,13 @@
 (Formerly E-Compass. Saved data still uses `ecompass.*` keys so existing history is kept.)
 
 A home-screen web app (PWA) that helps non-verbal autistic kids find and share how they feel.
-It starts with one question, *comfortable or uncomfortable?*, and goes deeper one step at a time
-(body or feelings → where → what kind → how big). The child can stop at any point after the first
-question with **Finish questions**. It ends with a feeling card the child can show to a grown-up,
-an optional calm-down step, and a private on-device history for caregivers.
+Every feeling is a point on an **emotion sphere**: *Good · Calm · Not good* picks the half (calm is
+the center), the feeling family picks the direction, and the size ladder picks the distance from calm.
+The child can then add causes, one at a time, until they say *That's all*. The result is one honest
+sentence — "I feel annoyed because my head hurts and it's too loud." — on a card they can show a
+grown-up, an optional calm-down step (the dot floats home to calm), and a private on-device history.
+
+Design spec: *E-Compass Design Spec: Emotion Sphere & Calm Flow* (Claude doc; written before the E-Feels rename).
 
 ## Try it on iPhone / iPad
 
@@ -33,8 +36,9 @@ and a card shown to a grown-up is never lost.
 | | |
 |---|---|
 | Stack | Preact + Vite + TypeScript, `vite-plugin-pwa` (Workbox) for offline |
-| Content | `src/content/vocabulary.json`: every question, choice, sentence and calm-down step. Edit words here, not in code. |
-| Flow engine | `src/flow.ts`: an immutable navigation stack, so **Back is an exact undo** |
+| Content | `src/content/vocabulary.json`: halves, feeling families (hue, size ladder, flavor words), causes with their sentence phrases and safety flag, calm-down steps. Edit words here, not in code. |
+| Flow engine | `src/flow.ts`: an immutable navigation stack, so **Back is an exact undo**; sentence builder; sphere position |
+| Sphere | `src/components/Sphere.tsx`: reflects answers only (never tapped); persists between screens so the dot glides |
 | Storage | `src/storage.ts` (check-ins) and `src/prefs.ts` (preferences), both localStorage on this device only, kept separate |
 | Updates | `src/updates.ts`: new versions download quietly and apply only on the start screen, never mid check-in |
 | Hosting | Netlify (`netlify.toml`) |
@@ -57,11 +61,16 @@ npm run build      # type-check + production build into dist/
 npm run test:e2e   # Playwright + axe at iPhone SE (375×667) and iPad (820×1180)
 ```
 
-## MVP decisions (Oct 2026)
+## Decisions (Oct 2026)
 
-- Tapping a choice moves on; **Back** undoes. No Next button.
+- v0.4: emotion sphere; first question Good · Calm · Not good ("Not good" over "Bad"); feeling first; body states are causes; causes repeat via "Anything else?" (four per screen, "More choices"); safety cause opens a grown-up card and marks history; calm, interruptible motion with Reduce Motion fallbacks.
+- v0.3 (Alan): renamed E-Feels; save as soon as the card appears; **Finish questions** from the second question on; **Finish** on the card; "I need help" button; Add to Home Screen steps in Grown-ups; welcome shows once.
 - The path so far shows as buttons; tapping one jumps back to that question (answers after it are cleared).
 - "I'm not sure" opens a helper menu; "Not sure" moves to the next step.
+
+### MVP (v0.1)
+
+- Tapping a choice moves on; **Back** undoes. No Next button.
 - Icons only on the first two questions; words only for nuanced terms.
 - No audio in the app (VoiceOver still works).
 - No accounts, no sync, no analytics, no backup.

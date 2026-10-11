@@ -1,45 +1,67 @@
-// Shape of the vocabulary file. Kept platform-neutral (plain JSON) so the same
-// content can drive a native rebuild or a caregiver customization screen later.
+// Shape of the vocabulary file (v2: the emotion sphere).
+// Plain JSON so the same content can drive a native rebuild or a caregiver
+// customization screen later. See the design spec: "E-Compass Design Spec:
+// Emotion Sphere & Calm Flow".
 
-/** Special destinations a choice can point to instead of a node id. */
-export type Token = '@continue' | '@size' | '@card' | '@notsure' | '@help';
+export type HalfId = 'good' | 'notgood';
+export type Mood = HalfId | 'calm' | 'unsure';
+export type IconName = 'good' | 'calm' | 'notgood' | 'hand';
 
-export type Group = 'mood' | 'body' | 'feel';
-
-export type IconName = 'comfortable' | 'uncomfortable' | 'body' | 'feelings' | 'both' | 'hand';
-
-export interface Choice {
+/** A word on a family's size ladder. Picking it picks the size too. */
+export interface LadderWord {
   id: string;
   label: string;
-  /** Only used on the first questions, where pictures generalize well. */
-  icon?: IconName;
-  /** Sentence fragment for the feeling card, e.g. "My tummy hurts." */
-  phrase?: string;
-  /** Overrides the node's group for sentence building. */
-  group?: Group;
-  /** Visual tone. Never the only cue: word (and icon) always carry meaning. */
-  tone?: 'comfortable' | 'uncomfortable';
-  /** Where to go next. Defaults to '@continue'. */
-  next?: string;
-  /** Destinations queued for later, e.g. "Both" visits body, then feelings. */
-  then?: string[];
+  /** 1 = small, 2 = medium, 3 = big (distance from calm on the sphere). */
+  size: 1 | 2 | 3;
+  /** Feeling part of the sentence, without the full stop: "I feel worried". */
+  phrase: string;
 }
 
-export interface QuestionNode {
+/** A kind of a feeling (lonely is a kind of sad), not a size. */
+export interface FlavorWord {
   id: string;
+  label: string;
+  /** Adjective used in the sentence: "lonely" → "I feel very lonely". */
+  adjective: string;
+}
+
+export interface Family {
+  id: string;
+  label: string;
+  /** Adjective for "I feel …" when the child stops at the family. */
+  adjective: string;
+  /** Position around the wheel, degrees clockwise from the top. */
+  angle: number;
+  /** CSS custom property suffix: var(--fam-<hue>). */
+  hue: string;
+  ladder: [LadderWord, LadderWord, LadderWord];
+  flavors: FlavorWord[];
+}
+
+export interface Half {
+  id: HalfId;
+  label: string;
+  icon: IconName;
+  /** Sentence when the child stops at the half: "I feel good". */
+  phrase: string;
+  families: Family[];
+}
+
+export interface Cause {
+  id: string;
+  label: string;
+  /** Phrase after "because": "my head hurts". */
+  phrase: string;
+  /** Opens the "I need a grown-up" card and marks the check-in. */
+  safety?: boolean;
+}
+
+export interface CauseKind {
+  id: string;
+  label: string;
+  /** Title of the list screen. */
   title: string;
-  group: Group;
-  /** 'big' = two large icon rows (first question). */
-  layout?: 'big' | 'list';
-  choices: Choice[];
-  skip: { label: string; next: string };
-}
-
-export interface SizeOption {
-  id: string;
-  label: string;
-  /** 1–3, drives the dot size. */
-  level: 1 | 2 | 3;
+  causes: Cause[];
 }
 
 export interface CopingItem {
@@ -48,7 +70,7 @@ export interface CopingItem {
   steps: string[];
   /** 'help' opens the "I need help" card instead of steps. */
   action?: 'help';
-  /** Shows the breathing guide. */
+  /** Shows the breathing guide (the dot drifting home to calm). */
   breathing?: boolean;
 }
 
@@ -59,15 +81,25 @@ export interface CopingSet {
 }
 
 export interface Vocabulary {
-  version: number;
-  start: string;
-  nodes: Record<string, QuestionNode>;
-  size: { title: string; options: SizeOption[]; skip: string };
-  /** Fallback sentences when nothing more specific was chosen. */
-  fallback: Record<'comfortable' | 'uncomfortable' | 'unsure', string>;
+  version: 2;
+  start: {
+    title: string;
+    calm: { label: string; icon: IconName; phrase: string };
+    unsure: { label: string; phrase: string };
+  };
+  halves: Record<HalfId, Half>;
+  size: {
+    title: string;
+    options: { size: 1 | 2 | 3; label: string; modifier: string }[];
+    skip: string;
+  };
+  causeKinds: CauseKind[];
   coping: {
     items: Record<string, CopingItem>;
-    /** Choice id → coping set. The deepest matching choice wins. */
+    /**
+     * Keys are family ids, "<family>:<size>" for a specific size,
+     * or cause ids. The most specific feeling match wins, then causes.
+     */
     match: Record<string, CopingSet>;
     default: CopingSet;
   };

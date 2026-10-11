@@ -1,202 +1,190 @@
 {
-  "version": 1,
-  "start": "start",
-  "nodes": {
-    "start": {
-      "id": "start",
-      "title": "How do I feel?",
-      "group": "mood",
-      "layout": "big",
-      "choices": [
-        { "id": "comfortable", "label": "Comfortable", "icon": "comfortable", "tone": "comfortable", "phrase": "I feel good.", "next": "c-where" },
-        { "id": "uncomfortable", "label": "Uncomfortable", "icon": "uncomfortable", "tone": "uncomfortable", "phrase": "I don't feel good.", "next": "u-where" }
-      ],
-      "skip": { "label": "I'm not sure", "next": "@notsure" }
-    },
+  "version": 2,
+  "start": {
+    "title": "How do I feel?",
+    "calm": { "label": "Calm", "icon": "calm", "phrase": "I feel calm" },
+    "unsure": { "label": "I'm not sure", "phrase": "I'm not sure how I feel" }
+  },
 
-    "u-where": {
-      "id": "u-where",
-      "title": "Where is it?",
-      "group": "mood",
-      "choices": [
-        { "id": "u-body", "label": "In my body", "icon": "body", "group": "body", "phrase": "My body doesn't feel good.", "next": "u-body" },
-        { "id": "u-feelings", "label": "In my feelings", "icon": "feelings", "group": "feel", "phrase": "I have a hard feeling.", "next": "u-feel" },
-        { "id": "u-both", "label": "Both", "icon": "both", "next": "u-body", "then": ["u-feel"] }
-      ],
-      "skip": { "label": "I'm not sure", "next": "@notsure" }
+  "halves": {
+    "good": {
+      "id": "good",
+      "label": "Good",
+      "icon": "good",
+      "phrase": "I feel good",
+      "families": [
+        {
+          "id": "happy", "label": "Happy", "adjective": "happy", "angle": 0, "hue": "happy",
+          "ladder": [
+            { "id": "glad", "label": "Glad", "size": 1, "phrase": "I feel glad" },
+            { "id": "happy-word", "label": "Happy", "size": 2, "phrase": "I feel happy" },
+            { "id": "joyful", "label": "Joyful", "size": 3, "phrase": "I feel joyful" }
+          ],
+          "flavors": [
+            { "id": "silly", "label": "Silly", "adjective": "silly" },
+            { "id": "thankful", "label": "Thankful", "adjective": "thankful" }
+          ]
+        },
+        {
+          "id": "excited", "label": "Excited", "adjective": "excited", "angle": 90, "hue": "excited",
+          "ladder": [
+            { "id": "interested", "label": "Interested", "size": 1, "phrase": "I feel interested" },
+            { "id": "excited-word", "label": "Excited", "size": 2, "phrase": "I feel excited" },
+            { "id": "bouncy", "label": "Bouncy", "size": 3, "phrase": "I feel bouncy" }
+          ],
+          "flavors": [
+            { "id": "curious", "label": "Curious", "adjective": "curious" },
+            { "id": "eager", "label": "Eager", "adjective": "eager" }
+          ]
+        },
+        {
+          "id": "proud", "label": "Proud", "adjective": "proud", "angle": 180, "hue": "proud",
+          "ladder": [
+            { "id": "pleased", "label": "Pleased", "size": 1, "phrase": "I feel pleased" },
+            { "id": "proud-word", "label": "Proud", "size": 2, "phrase": "I feel proud" },
+            { "id": "very-proud", "label": "Very proud", "size": 3, "phrase": "I feel very proud" }
+          ],
+          "flavors": [
+            { "id": "loved", "label": "Loved", "adjective": "loved" },
+            { "id": "brave", "label": "Brave", "adjective": "brave" }
+          ]
+        },
+        {
+          "id": "content", "label": "Content", "adjective": "content", "angle": 270, "hue": "content",
+          "ladder": [
+            { "id": "relaxed", "label": "Relaxed", "size": 1, "phrase": "I feel relaxed" },
+            { "id": "content-word", "label": "Content", "size": 2, "phrase": "I feel content" },
+            { "id": "blissful", "label": "Blissful", "size": 3, "phrase": "I feel blissful" }
+          ],
+          "flavors": [
+            { "id": "cozy", "label": "Cozy", "adjective": "cozy" },
+            { "id": "safe", "label": "Safe", "adjective": "safe" }
+          ]
+        }
+      ]
     },
-    "u-body": {
-      "id": "u-body",
-      "title": "Where in my body?",
-      "group": "body",
-      "choices": [
-        { "id": "head", "label": "Head", "phrase": "My head doesn't feel good.", "next": "u-head" },
-        { "id": "tummy", "label": "Tummy", "phrase": "My tummy doesn't feel good.", "next": "u-tummy" },
-        { "id": "whole-body", "label": "Whole body", "phrase": "My body doesn't feel good.", "next": "u-whole" },
-        { "id": "senses", "label": "Senses", "phrase": "Something is bothering my senses.", "next": "u-senses" }
-      ],
-      "skip": { "label": "Not sure", "next": "@continue" }
-    },
-    "u-head": {
-      "id": "u-head",
-      "title": "What kind?",
-      "group": "body",
-      "choices": [
-        { "id": "headache", "label": "Headache", "phrase": "My head hurts." },
-        { "id": "dizzy", "label": "Dizzy", "phrase": "I feel dizzy." },
-        { "id": "foggy", "label": "Foggy", "phrase": "My head feels foggy." }
-      ],
-      "skip": { "label": "Not sure", "next": "@continue" }
-    },
-    "u-tummy": {
-      "id": "u-tummy",
-      "title": "What kind?",
-      "group": "body",
-      "choices": [
-        { "id": "tummy-ache", "label": "Tummy ache", "phrase": "My tummy hurts." },
-        { "id": "feel-sick", "label": "Feel sick", "phrase": "I feel sick." },
-        { "id": "hungry", "label": "Hungry", "phrase": "I'm hungry." },
-        { "id": "bathroom", "label": "Need bathroom", "phrase": "I need the bathroom." }
-      ],
-      "skip": { "label": "Not sure", "next": "@continue" }
-    },
-    "u-whole": {
-      "id": "u-whole",
-      "title": "What kind?",
-      "group": "body",
-      "choices": [
-        { "id": "tired", "label": "Tired", "phrase": "I'm tired." },
-        { "id": "cant-sit-still", "label": "Can't sit still", "phrase": "I can't sit still." },
-        { "id": "hot-cold", "label": "Too hot or cold", "phrase": "I'm too hot or too cold." },
-        { "id": "heart-pounding", "label": "Heart pounding", "phrase": "My heart is pounding." }
-      ],
-      "skip": { "label": "Not sure", "next": "@continue" }
-    },
-    "u-senses": {
-      "id": "u-senses",
-      "title": "What kind?",
-      "group": "body",
-      "choices": [
-        { "id": "too-loud", "label": "Too loud", "phrase": "It's too loud." },
-        { "id": "too-bright", "label": "Too bright", "phrase": "It's too bright." },
-        { "id": "itchy", "label": "Itchy or scratchy", "phrase": "Something feels itchy or scratchy." },
-        { "id": "smell-taste", "label": "Bad smell or taste", "phrase": "Something smells or tastes bad." }
-      ],
-      "skip": { "label": "Not sure", "next": "@continue" }
-    },
-    "u-feel": {
-      "id": "u-feel",
-      "title": "Which feeling?",
-      "group": "feel",
-      "choices": [
-        { "id": "scared", "label": "Scared", "phrase": "I feel scared.", "next": "u-scared" },
-        { "id": "mad", "label": "Mad", "phrase": "I feel mad.", "next": "u-mad" },
-        { "id": "sad", "label": "Sad", "phrase": "I feel sad.", "next": "u-sad" },
-        { "id": "overwhelmed", "label": "Overwhelmed", "phrase": "I feel overwhelmed.", "next": "u-over" }
-      ],
-      "skip": { "label": "Not sure", "next": "@continue" }
-    },
-    "u-scared": {
-      "id": "u-scared",
-      "title": "What kind of scared?",
-      "group": "feel",
-      "choices": [
-        { "id": "worried", "label": "Worried", "phrase": "I feel worried." },
-        { "id": "nervous", "label": "Nervous", "phrase": "I feel nervous." },
-        { "id": "panicky", "label": "Panicky", "phrase": "I feel panicky." }
-      ],
-      "skip": { "label": "Not sure", "next": "@continue" }
-    },
-    "u-mad": {
-      "id": "u-mad",
-      "title": "What kind of mad?",
-      "group": "feel",
-      "choices": [
-        { "id": "annoyed", "label": "Annoyed", "phrase": "I feel annoyed." },
-        { "id": "frustrated", "label": "Frustrated", "phrase": "I feel frustrated." },
-        { "id": "furious", "label": "Furious", "phrase": "I feel furious." }
-      ],
-      "skip": { "label": "Not sure", "next": "@continue" }
-    },
-    "u-sad": {
-      "id": "u-sad",
-      "title": "What kind of sad?",
-      "group": "feel",
-      "choices": [
-        { "id": "lonely", "label": "Lonely", "phrase": "I feel lonely." },
-        { "id": "disappointed", "label": "Disappointed", "phrase": "I feel disappointed." },
-        { "id": "hurt-feelings", "label": "Hurt feelings", "phrase": "My feelings are hurt." }
-      ],
-      "skip": { "label": "Not sure", "next": "@continue" }
-    },
-    "u-over": {
-      "id": "u-over",
-      "title": "What is too much?",
-      "group": "feel",
-      "choices": [
-        { "id": "too-much-going-on", "label": "Too much going on", "phrase": "There is too much going on." },
-        { "id": "things-changed", "label": "Things changed", "phrase": "Things changed." },
-        { "id": "too-many-people", "label": "Too many people", "phrase": "There are too many people." }
-      ],
-      "skip": { "label": "Not sure", "next": "@continue" }
-    },
-
-    "c-where": {
-      "id": "c-where",
-      "title": "Where do I feel good?",
-      "group": "mood",
-      "choices": [
-        { "id": "c-body", "label": "In my body", "icon": "body", "group": "body", "phrase": "My body feels good.", "next": "c-body" },
-        { "id": "c-feelings", "label": "In my feelings", "icon": "feelings", "group": "feel", "phrase": "I feel good inside.", "next": "c-feel" },
-        { "id": "c-both", "label": "Both", "icon": "both", "next": "c-body", "then": ["c-feel"] }
-      ],
-      "skip": { "label": "I'm not sure", "next": "@notsure" }
-    },
-    "c-body": {
-      "id": "c-body",
-      "title": "How does my body feel?",
-      "group": "body",
-      "choices": [
-        { "id": "bouncy", "label": "Bouncy energy", "phrase": "I have bouncy energy." },
-        { "id": "relaxed", "label": "Relaxed", "phrase": "My body feels relaxed." },
-        { "id": "cozy", "label": "Cozy or sleepy", "phrase": "I feel cozy." },
-        { "id": "strong", "label": "Strong", "phrase": "I feel strong." }
-      ],
-      "skip": { "label": "Not sure", "next": "@continue" }
-    },
-    "c-feel": {
-      "id": "c-feel",
-      "title": "Which good feeling?",
-      "group": "feel",
-      "choices": [
-        { "id": "happy", "label": "Happy", "phrase": "I feel happy." },
-        { "id": "calm", "label": "Calm", "phrase": "I feel calm." },
-        { "id": "excited", "label": "Excited", "phrase": "I feel excited." },
-        { "id": "proud", "label": "Proud or loved", "phrase": "I feel proud and loved." }
-      ],
-      "skip": { "label": "Not sure", "next": "@continue" }
+    "notgood": {
+      "id": "notgood",
+      "label": "Not good",
+      "icon": "notgood",
+      "phrase": "I don't feel good",
+      "families": [
+        {
+          "id": "scared", "label": "Scared", "adjective": "scared", "angle": 0, "hue": "scared",
+          "ladder": [
+            { "id": "worried", "label": "Worried", "size": 1, "phrase": "I feel worried" },
+            { "id": "nervous", "label": "Nervous", "size": 2, "phrase": "I feel nervous" },
+            { "id": "panicky", "label": "Panicky", "size": 3, "phrase": "I feel panicky" }
+          ],
+          "flavors": [
+            { "id": "shy", "label": "Shy", "adjective": "shy" },
+            { "id": "unsure-feeling", "label": "Unsure", "adjective": "unsure" }
+          ]
+        },
+        {
+          "id": "overwhelmed", "label": "Overwhelmed", "adjective": "overwhelmed", "angle": 90, "hue": "overwhelmed",
+          "ladder": [
+            { "id": "uneasy", "label": "Uneasy", "size": 1, "phrase": "I feel uneasy" },
+            { "id": "overwhelmed-word", "label": "Overwhelmed", "size": 2, "phrase": "I feel overwhelmed" },
+            { "id": "overloaded", "label": "Overloaded", "size": 3, "phrase": "I feel overloaded" }
+          ],
+          "flavors": [
+            { "id": "confused", "label": "Confused", "adjective": "confused" },
+            { "id": "stuck", "label": "Stuck", "adjective": "stuck" }
+          ]
+        },
+        {
+          "id": "sad", "label": "Sad", "adjective": "sad", "angle": 180, "hue": "sad",
+          "ladder": [
+            { "id": "down", "label": "Down", "size": 1, "phrase": "I feel down" },
+            { "id": "sad-word", "label": "Sad", "size": 2, "phrase": "I feel sad" },
+            { "id": "heartbroken", "label": "Heartbroken", "size": 3, "phrase": "I feel heartbroken" }
+          ],
+          "flavors": [
+            { "id": "lonely", "label": "Lonely", "adjective": "lonely" },
+            { "id": "disappointed", "label": "Disappointed", "adjective": "disappointed" },
+            { "id": "hurt", "label": "Hurt", "adjective": "hurt" }
+          ]
+        },
+        {
+          "id": "mad", "label": "Mad", "adjective": "mad", "angle": 270, "hue": "mad",
+          "ladder": [
+            { "id": "annoyed", "label": "Annoyed", "size": 1, "phrase": "I feel annoyed" },
+            { "id": "frustrated", "label": "Frustrated", "size": 2, "phrase": "I feel frustrated" },
+            { "id": "furious", "label": "Furious", "size": 3, "phrase": "I feel furious" }
+          ],
+          "flavors": [
+            { "id": "jealous", "label": "Jealous", "adjective": "jealous" },
+            { "id": "grumpy", "label": "Grumpy", "adjective": "grumpy" }
+          ]
+        }
+      ]
     }
   },
 
   "size": {
     "title": "How big is it?",
     "options": [
-      { "id": "little", "label": "A little", "level": 1 },
-      { "id": "medium", "label": "Medium", "level": 2 },
-      { "id": "a-lot", "label": "A lot", "level": 3 }
+      { "size": 1, "label": "A little", "modifier": "a little " },
+      { "size": 2, "label": "Medium", "modifier": "" },
+      { "size": 3, "label": "A lot", "modifier": "very " }
     ],
     "skip": "Not sure"
   },
 
-  "fallback": {
-    "comfortable": "I feel good.",
-    "uncomfortable": "I don't feel good.",
-    "unsure": "I'm not sure how I feel."
-  },
+  "causeKinds": [
+    {
+      "id": "body", "label": "My body", "title": "What's happening in my body?",
+      "causes": [
+        { "id": "headache", "label": "Headache", "phrase": "my head hurts" },
+        { "id": "tummy-ache", "label": "Tummy ache", "phrase": "my tummy hurts" },
+        { "id": "tired", "label": "Tired", "phrase": "I'm tired" },
+        { "id": "hungry", "label": "Hungry", "phrase": "I'm hungry" },
+        { "id": "feel-sick", "label": "Feel sick", "phrase": "I feel sick" },
+        { "id": "bathroom", "label": "Need bathroom", "phrase": "I need the bathroom" },
+        { "id": "dizzy", "label": "Dizzy", "phrase": "I feel dizzy" },
+        { "id": "hot-cold", "label": "Too hot or cold", "phrase": "I'm too hot or too cold" },
+        { "id": "heart-pounding", "label": "Heart pounding", "phrase": "my heart is pounding" },
+        { "id": "cant-sit-still", "label": "Can't sit still", "phrase": "I can't sit still" }
+      ]
+    },
+    {
+      "id": "senses", "label": "My senses", "title": "What's bothering my senses?",
+      "causes": [
+        { "id": "too-loud", "label": "Too loud", "phrase": "it's too loud" },
+        { "id": "too-bright", "label": "Too bright", "phrase": "it's too bright" },
+        { "id": "crowded", "label": "Too crowded", "phrase": "it's too crowded" },
+        { "id": "scratchy", "label": "Scratchy clothes", "phrase": "my clothes feel scratchy" },
+        { "id": "smell-taste", "label": "Bad smell or taste", "phrase": "something smells or tastes bad" }
+      ]
+    },
+    {
+      "id": "hard", "label": "Something hard happened", "title": "What happened?",
+      "causes": [
+        { "id": "didnt-get", "label": "Didn't get what I wanted", "phrase": "I didn't get what I wanted" },
+        { "id": "plans-changed", "label": "Plans changed", "phrase": "plans changed" },
+        { "id": "hurt-feelings", "label": "Someone hurt my feelings", "phrase": "someone hurt my feelings" },
+        { "id": "hurt-or-scared", "label": "Someone hurt or scared me", "phrase": "someone hurt or scared me", "safety": true },
+        { "id": "had-to-stop", "label": "Had to stop something I liked", "phrase": "I had to stop something I liked" },
+        { "id": "had-to-wait", "label": "Had to wait", "phrase": "I had to wait" },
+        { "id": "something-hard", "label": "Something was hard to do", "phrase": "something was hard to do" }
+      ]
+    },
+    {
+      "id": "good-things", "label": "Something good happened", "title": "What happened?",
+      "causes": [
+        { "id": "fun", "label": "Something fun", "phrase": "something fun happened" },
+        { "id": "someone-i-like", "label": "Time with someone I like", "phrase": "I spent time with someone I like" },
+        { "id": "quiet-place", "label": "A quiet, comfy place", "phrase": "I'm in a quiet, comfy place" },
+        { "id": "favorite-thing", "label": "My favorite thing", "phrase": "I got to do my favorite thing" },
+        { "id": "did-it", "label": "I did something hard", "phrase": "I did something hard" }
+      ]
+    }
+  ],
 
   "coping": {
     "items": {
-      "breathe": { "id": "breathe", "label": "Breathe slowly", "breathing": true, "steps": ["Breathe in through your nose.", "Breathe out slowly, like blowing a bubble.", "Do it 5 times."] },
+      "breathe": { "id": "breathe", "label": "Breathe with the dot", "breathing": true, "steps": ["Breathe in slowly through your nose.", "Breathe out slowly, like blowing a bubble.", "Watch your dot float home to calm."] },
       "squeeze": { "id": "squeeze", "label": "Squeeze my hands", "steps": ["Make tight fists.", "Squeeze and count to 5.", "Let go. Feel your hands relax."] },
       "quiet": { "id": "quiet", "label": "Go to a quiet place", "steps": ["Find a quiet spot.", "Sit or lie down.", "Stay until you feel ready."] },
       "grown-up": { "id": "grown-up", "label": "Get a grown-up", "action": "help", "steps": [] },
@@ -207,29 +195,32 @@
       "water": { "id": "water", "label": "Drink some water", "steps": ["Get a cup of water.", "Take small sips."] },
       "snack": { "id": "snack", "label": "Have a snack", "steps": ["Ask for a snack, or get one.", "Eat slowly."] },
       "bathroom": { "id": "bathroom", "label": "Go to the bathroom", "steps": ["Go to the bathroom now.", "Ask a grown-up if you need help."] },
-      "change-clothes": { "id": "change-clothes", "label": "Change what I'm wearing", "steps": ["Take off what feels itchy, or add a layer.", "Ask a grown-up if you need help."] },
+      "change-clothes": { "id": "change-clothes", "label": "Change what I'm wearing", "steps": ["Take off what feels scratchy, or add a layer.", "Ask a grown-up if you need help."] },
       "jump": { "id": "jump", "label": "Jump 10 times", "steps": ["Find a safe space.", "Jump and count to 10."] },
       "dance": { "id": "dance", "label": "Dance", "steps": ["Find some space.", "Move your body any way you like."] },
       "outside": { "id": "outside", "label": "Go outside", "steps": ["Ask a grown-up first.", "Run, walk, or play outside."] },
       "hug": { "id": "hug", "label": "Hug something soft", "steps": ["Find a pillow, blanket, or stuffed animal.", "Hold it tight."] }
     },
     "match": {
-      "panicky": { "cardLabel": "Help me feel better", "items": ["breathe", "grown-up", "squeeze", "quiet"] },
       "scared": { "cardLabel": "Help me feel better", "items": ["breathe", "squeeze", "hug", "grown-up"] },
-      "mad": { "cardLabel": "Help me feel better", "items": ["push-wall", "squeeze", "breathe", "quiet"] },
-      "sad": { "cardLabel": "Help me feel better", "items": ["hug", "grown-up", "rest", "quiet"] },
+      "scared:3": { "cardLabel": "Help me feel better", "items": ["breathe", "grown-up", "squeeze", "quiet"] },
       "overwhelmed": { "cardLabel": "Help me feel better", "items": ["quiet", "headphones", "breathe", "grown-up"] },
-      "senses": { "cardLabel": "Help me feel better", "items": ["headphones", "darker", "quiet", "grown-up"] },
-      "itchy": { "cardLabel": "Help me feel better", "items": ["change-clothes", "grown-up"] },
-      "head": { "cardLabel": "Help me feel better", "items": ["rest", "water", "darker", "grown-up"] },
-      "tummy": { "cardLabel": "Help me feel better", "items": ["rest", "water", "grown-up"] },
-      "hungry": { "cardLabel": "Help me feel better", "items": ["snack", "water", "grown-up"] },
-      "bathroom": { "cardLabel": "Help me feel better", "items": ["bathroom", "grown-up"] },
-      "tired": { "cardLabel": "Help me feel better", "items": ["rest", "quiet", "water"] },
-      "cant-sit-still": { "cardLabel": "Help me feel better", "items": ["jump", "push-wall", "outside"] },
-      "heart-pounding": { "cardLabel": "Help me feel better", "items": ["breathe", "squeeze", "grown-up"] },
-      "bouncy": { "cardLabel": "Use my energy", "items": ["jump", "dance", "outside"] },
-      "uncomfortable": { "cardLabel": "Help me feel better", "items": ["breathe", "quiet", "hug", "grown-up"] }
+      "sad": { "cardLabel": "Help me feel better", "items": ["hug", "grown-up", "rest", "quiet"] },
+      "mad": { "cardLabel": "Help me feel better", "items": ["push-wall", "squeeze", "breathe", "quiet"] },
+      "excited:3": { "cardLabel": "Use my energy", "items": ["jump", "dance", "outside"] },
+      "hurt-or-scared": { "cardLabel": "Help me feel better", "items": ["grown-up", "breathe", "hug"] },
+      "headache": { "cardLabel": "Help me feel better", "items": ["rest", "water", "darker"] },
+      "tummy-ache": { "cardLabel": "Help me feel better", "items": ["rest", "water", "grown-up"] },
+      "feel-sick": { "cardLabel": "Help me feel better", "items": ["grown-up", "rest", "water"] },
+      "hungry": { "cardLabel": "Help me feel better", "items": ["snack", "water"] },
+      "bathroom": { "cardLabel": "Help me feel better", "items": ["bathroom"] },
+      "tired": { "cardLabel": "Help me feel better", "items": ["rest", "quiet"] },
+      "cant-sit-still": { "cardLabel": "Use my energy", "items": ["jump", "push-wall", "outside"] },
+      "heart-pounding": { "cardLabel": "Help me feel better", "items": ["breathe", "squeeze"] },
+      "too-loud": { "cardLabel": "Help me feel better", "items": ["headphones", "quiet"] },
+      "too-bright": { "cardLabel": "Help me feel better", "items": ["darker", "quiet"] },
+      "crowded": { "cardLabel": "Help me feel better", "items": ["quiet", "headphones"] },
+      "scratchy": { "cardLabel": "Help me feel better", "items": ["change-clothes"] }
     },
     "default": { "cardLabel": "Help me feel better", "items": ["breathe", "quiet", "hug", "grown-up"] }
   }

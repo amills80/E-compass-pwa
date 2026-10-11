@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
-import { CheckIn, clearCheckIns, loadCheckIns } from './storage';
+import { CheckIn, clearCheckIns, loadCheckIns, moodOf } from './storage';
 import { Prefs, isInstalled, loadPrefs, resetPrefs, savePrefs } from './prefs';
 import { InstallSteps } from './InstallSteps';
 
 const DAY = 24 * 60 * 60 * 1000;
 const dayKey = (d: Date) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
-const moodWord = { comfortable: 'Comfortable', uncomfortable: 'Uncomfortable', unsure: 'Not sure' } as const;
+const moodWord = { good: 'Good', calm: 'Calm', notgood: 'Not good', unsure: 'Not sure' } as const;
+const MOODS = ['notgood', 'unsure', 'calm', 'good'] as const;
 
 export function GrownUps({ onClose }: { onClose: () => void }) {
   const [items, setItems] = useState<CheckIn[]>(() => loadCheckIns());
@@ -25,16 +26,16 @@ export function GrownUps({ onClose }: { onClose: () => void }) {
     today.setHours(0, 0, 0, 0);
     const days = Array.from({ length: 7 }, (_, i) => {
       const d = new Date(today.getTime() - (6 - i) * DAY);
-      return { date: d, comfortable: 0, uncomfortable: 0, unsure: 0 };
+      return { date: d, good: 0, calm: 0, notgood: 0, unsure: 0 };
     });
     const byKey = new Map(days.map((d) => [dayKey(d.date), d]));
     for (const c of items) {
       const slot = byKey.get(dayKey(new Date(c.at)));
-      if (slot) slot[c.mood] += 1;
+      if (slot) slot[moodOf(c)] += 1;
     }
     return days;
   }, [items]);
-  const max = Math.max(1, ...week.map((d) => d.comfortable + d.uncomfortable + d.unsure));
+  const max = Math.max(1, ...week.map((d) => d.good + d.calm + d.notgood + d.unsure));
 
   const fmt = new Intl.DateTimeFormat(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
   const dayFmt = new Intl.DateTimeFormat(undefined, { weekday: 'narrow' });
@@ -59,14 +60,14 @@ export function GrownUps({ onClose }: { onClose: () => void }) {
           <h3 id="week-h" class="h3">Last 7 days</h3>
           <ul class="week" role="list">
             {week.map((d) => {
-              const total = d.comfortable + d.uncomfortable + d.unsure;
+              const total = d.good + d.calm + d.notgood + d.unsure;
               const desc = `${dayLong.format(d.date)}: ${total} check-in${total === 1 ? '' : 's'}${
-                total ? ` (${d.comfortable} comfortable, ${d.uncomfortable} uncomfortable, ${d.unsure} not sure)` : ''
+                total ? ` (${d.good} good, ${d.calm} calm, ${d.notgood} not good, ${d.unsure} not sure)` : ''
               }`;
               return (
                 <li key={d.date.toISOString()} class="week-day" aria-label={desc}>
                   <div class="week-bar" aria-hidden="true">
-                    {(['uncomfortable', 'unsure', 'comfortable'] as const).map((m) =>
+                    {MOODS.map((m) =>
                       d[m] ? <span key={m} class={`seg seg-${m}`} style={{ height: `${(d[m] / max) * 100}%` }} /> : null
                     )}
                   </div>
@@ -78,7 +79,7 @@ export function GrownUps({ onClose }: { onClose: () => void }) {
             })}
           </ul>
           <p class="legend" aria-hidden="true">
-            <span class="key key-comfortable" /> Comfortable <span class="key key-uncomfortable" /> Uncomfortable{' '}
+            <span class="key key-good" /> Good <span class="key key-calm" /> Calm <span class="key key-notgood" /> Not good{' '}
             <span class="key key-unsure" /> Not sure
           </p>
         </section>
@@ -90,10 +91,11 @@ export function GrownUps({ onClose }: { onClose: () => void }) {
           ) : (
             <ul class="history" role="list">
               {items.map((c) => (
-                <li key={c.id} class={`history-row mood-${c.mood}`}>
+                <li key={c.id} class={`history-row mood-${moodOf(c)}`}>
+                  {c.safety && <p class="safety-tag">Needs a grown-up: “someone hurt or scared me”</p>}
                   <p class="history-main">{c.sentences.join(' ')}</p>
                   <p class="meta">
-                    {fmt.format(new Date(c.at))} · {moodWord[c.mood]}
+                    {fmt.format(new Date(c.at))} · {moodWord[moodOf(c)]}
                     {c.size ? ` · ${c.size}` : ''}
                     {c.coping ? ` · Tried: ${c.coping.replace(/-/g, ' ')}` : ''}
                     {c.askedHelp ? ' · Asked for help' : ''}

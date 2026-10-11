@@ -2,13 +2,16 @@
 // On iOS, a home-screen web app keeps its own storage (separate from Safari),
 // which is deleted if the app icon is removed.
 
-import type { Mood } from './flow';
+import type { Mood } from './content/types';
+
+/** v1 records used comfortable/uncomfortable; they map onto good/notgood. */
+export type StoredMood = Mood | 'comfortable' | 'uncomfortable';
 
 export interface CheckIn {
   id: string;
   /** ISO timestamp */
   at: string;
-  mood: Mood;
+  mood: StoredMood;
   /** Choice ids in order, for future analysis/customization. */
   choiceIds: string[];
   /** Choice labels in order, for display. */
@@ -18,6 +21,19 @@ export interface CheckIn {
   coping: string | null;
   /** The child opened the "I need help" card during this check-in. */
   askedHelp?: boolean;
+  /** v2: where the feeling sits on the sphere. */
+  feeling?: { half: string | null; family: string | null; word: string | null; size: number | null };
+  /** v2: cause ids, in the order the child picked them (not a ranking). */
+  causes?: string[];
+  /** v2: a safety cause was picked ("someone hurt or scared me"). */
+  safety?: boolean;
+}
+
+/** Normalize legacy moods so history and charts use one set. */
+export function moodOf(c: CheckIn): Mood {
+  if (c.mood === 'comfortable') return 'good';
+  if (c.mood === 'uncomfortable') return 'notgood';
+  return c.mood;
 }
 
 // Named from the app's old name (E-Compass). Don't rename: devices already

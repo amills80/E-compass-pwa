@@ -21,6 +21,10 @@ interface ScreenProps {
   notice?: string;
   /** Changes on every navigation so focus moves to the new heading. */
   viewKey: string;
+  /** Persistent visual above the question (the sphere). */
+  visual?: ComponentChildren;
+  /** Direction of travel, for the gentle slide (fade with Reduce Motion). */
+  dir?: 'fwd' | 'back';
   children: ComponentChildren;
 }
 
@@ -38,6 +42,8 @@ export function Screen({
   variant = 'default',
   notice,
   viewKey,
+  visual,
+  dir = 'fwd',
   children
 }: ScreenProps) {
   const h1 = useRef<HTMLHeadingElement>(null);
@@ -77,7 +83,8 @@ export function Screen({
           ))}
         </ol>
       )}
-      <main class="content">
+      {visual && <div class="visual">{visual}</div>}
+      <main class={`content enter-${dir}`} key={viewKey}>
         {notice && (
           <p class="notice" role="status">
             {notice}

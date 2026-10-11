@@ -16,7 +16,18 @@
   --uncomfy-tint: #f6e3cf;
   --uncomfy-edge: #94582a;
   --unsure-tint: #e6e1da;
+  --calm-tint: #e2e8ee;
+  --calm-edge: #4f6f8f;
   --danger: #a33a2a;
+  /* Feeling family hues (muted). Always shown with the family's word. */
+  --fam-happy: #94730c;
+  --fam-excited: #b0602a;
+  --fam-proud: #ad5580;
+  --fam-content: #4a8455;
+  --fam-scared: #7656a6;
+  --fam-overwhelmed: #3f8183;
+  --fam-sad: #4a70ad;
+  --fam-mad: #b0463c;
   --inverse-bg: #1f1d1a;
   --inverse-text: #fbf8f3;
   --radius: 1.25rem;
@@ -40,7 +51,17 @@
     --uncomfy-tint: #3d2c1d;
     --uncomfy-edge: #e0a670;
     --unsure-tint: #36322d;
+    --calm-tint: #263039;
+    --calm-edge: #9db8d3;
     --danger: #ff9b8a;
+    --fam-happy: #dcc05c;
+    --fam-excited: #e89c66;
+    --fam-proud: #e398ba;
+    --fam-content: #8ec79b;
+    --fam-scared: #b59de0;
+    --fam-overwhelmed: #86c3c5;
+    --fam-sad: #90b0e5;
+    --fam-mad: #eb8f84;
     --inverse-bg: #fbf8f3;
     --inverse-text: #1f1d1a;
   }
@@ -53,6 +74,7 @@
     --border: var(--text);
     --comfy-edge: var(--text);
     --uncomfy-edge: var(--text);
+    --calm-edge: var(--text);
   }
 }
 
@@ -118,6 +140,8 @@ h1:focus { outline: none; }
   margin: 0 auto;
   display: flex;
   flex-direction: column;
+  /* Screen transitions slide content a little; never let that scroll sideways. */
+  overflow-x: clip;
   padding:
     max(0.5rem, env(safe-area-inset-top))
     max(1rem, env(safe-area-inset-right))
@@ -245,8 +269,9 @@ h1:focus { outline: none; }
 .choice.has-icon .icon { flex-shrink: 0; color: var(--text); }
 .chev { font-size: 2rem; line-height: 1; color: var(--text-2); }
 
-.choice.tone-comfortable { background: var(--comfy-tint); border-color: var(--comfy-edge); }
-.choice.tone-uncomfortable { background: var(--uncomfy-tint); border-color: var(--uncomfy-edge); }
+.choice.tone-good { background: var(--comfy-tint); border-color: var(--comfy-edge); }
+.choice.tone-calm { background: var(--calm-tint); border-color: var(--calm-edge); }
+.choice.tone-notgood { background: var(--uncomfy-tint); border-color: var(--uncomfy-edge); }
 
 .choices-big .choice {
   min-height: 9rem;
@@ -278,9 +303,6 @@ h1:focus { outline: none; }
   color: var(--text-2);
 }
 
-/* Subtle screen tint once the child has picked comfortable/uncomfortable. */
-.screen.tone-comfortable { background: linear-gradient(var(--comfy-tint), transparent 10rem); }
-.screen.tone-uncomfortable { background: linear-gradient(var(--uncomfy-tint), transparent 10rem); }
 
 /* ---------- Size ---------- */
 .size-choice { gap: 1.25rem; }
@@ -298,8 +320,8 @@ h1:focus { outline: none; }
   text-align: center;
   margin-bottom: 1rem;
 }
-.feeling-card p { font-size: 1.5rem; font-weight: 700; line-height: 1.3; }
-.feeling-card .card-size { margin-top: 0.4rem; font-weight: 800; }
+.card-feeling { font-size: 1.5rem; font-weight: 800; line-height: 1.25; }
+.card-because { font-size: 1.3rem; font-weight: 600; line-height: 1.3; margin-top: 0.3rem; animation: fade-in 300ms ease-out; }
 .saved-tag {
   align-self: center;
   font-size: 0.9rem;
@@ -419,14 +441,16 @@ h1:focus { outline: none; }
   background: var(--surface-2);
   overflow: hidden;
 }
-.seg-comfortable { background: var(--comfy-edge); }
-.seg-uncomfortable { background: var(--uncomfy-edge); }
+.seg-good { background: var(--comfy-edge); }
+.seg-calm { background: var(--calm-edge); }
+.seg-notgood { background: var(--uncomfy-edge); }
 .seg-unsure { background: var(--border); }
 .week-label { font-size: 0.85rem; font-weight: 600; color: var(--text-2); }
 .legend { font-size: 0.85rem; color: var(--text-2); margin-top: 0.5rem; display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem; }
 .key { display: inline-block; width: 0.8rem; height: 0.8rem; border-radius: 0.2rem; margin-left: 0.4rem; }
-.key-comfortable { background: var(--comfy-edge); }
-.key-uncomfortable { background: var(--uncomfy-edge); }
+.key-good { background: var(--comfy-edge); }
+.key-calm { background: var(--calm-edge); }
+.key-notgood { background: var(--uncomfy-edge); }
 .key-unsure { background: var(--border); }
 
 .history { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
@@ -437,8 +461,9 @@ h1:focus { outline: none; }
   border-radius: 0.9rem;
   padding: 0.7rem 0.9rem;
 }
-.history-row.mood-comfortable { border-left-color: var(--comfy-edge); }
-.history-row.mood-uncomfortable { border-left-color: var(--uncomfy-edge); }
+.history-row.mood-good { border-left-color: var(--comfy-edge); }
+.history-row.mood-calm { border-left-color: var(--calm-edge); }
+.history-row.mood-notgood { border-left-color: var(--uncomfy-edge); }
 .history-main { font-weight: 700; font-size: 1.05rem; margin-bottom: 0.15rem; }
 
 .danger { margin-top: 2rem; }
@@ -504,3 +529,64 @@ h1:focus { outline: none; }
 .check-row:focus-within { outline: 3px solid var(--focus); outline-offset: 3px; }
 .prefs-reset { margin-top: 0.75rem; }
 .center { text-align: center; }
+
+/* ---------- v2: sphere, picks, calm motion ---------- */
+.visual { display: flex; justify-content: center; margin: 0.25rem 0 0; }
+.sphere { width: clamp(84px, min(34vw, 17vh), 150px); aspect-ratio: 1; }
+.sphere svg { width: 100%; height: 100%; overflow: visible; }
+.sphere-layer { opacity: 0; transition: opacity 400ms ease; }
+.sphere-layer.is-on { opacity: 1; }
+.half { fill-opacity: 0.22; transition: fill-opacity 300ms ease; }
+.half-good { fill: var(--fam-happy); }
+.half-notgood { fill: var(--fam-sad); }
+.half.is-picked { fill-opacity: 0.45; }
+.wedge { fill-opacity: 0.2; stroke: none; transition: fill-opacity 300ms ease; }
+.wedge.is-picked { fill-opacity: 0.55; }
+.sphere-edge { fill: none; stroke: var(--border); stroke-width: 1.2; }
+.sphere-line, .sphere-ring { fill: none; stroke: var(--border); stroke-width: 0.8; opacity: 0.55; }
+.sphere-center { fill: var(--text-2); }
+.calm-glow { fill: var(--calm-edge); fill-opacity: 0.25; }
+.sphere-dot { fill: var(--text); transition: transform 450ms cubic-bezier(0.2, 0.7, 0.2, 1); }
+.is-homeward .sphere-dot { animation: homeward 24s ease-in-out forwards; }
+.is-homeward .sphere-body { animation: breathe-sphere 8s ease-in-out infinite; transform-origin: 0 0; }
+.is-paused .sphere-dot, .is-paused .sphere-body { animation-play-state: paused; }
+@keyframes homeward { from { transform: translate(var(--dx), var(--dy)); } to { transform: translate(0, 0); } }
+@keyframes breathe-sphere { 0%, 100% { transform: scale(0.9); } 50% { transform: scale(1); } }
+.breathing .sphere { width: clamp(120px, 44vw, 190px); }
+
+/* A tapped choice fills softly with its color, holds, then the flow moves on. */
+.choice { --pick: var(--accent); transition: background-color 200ms ease, border-color 200ms ease, transform 120ms ease; }
+.choice.is-picked {
+  background: color-mix(in srgb, var(--pick) 24%, var(--surface));
+  border-color: var(--pick);
+  box-shadow: inset 0 0 0 1px var(--pick);
+}
+.choices-start .choice { min-height: 4.75rem; }
+.swatch { flex-shrink: 0; width: 1.25rem; height: 1.25rem; border-radius: 50%; box-shadow: 0 0 0 2px var(--surface), 0 0 0 3px var(--border); }
+.h2.sub { margin: 1.1rem 0 0.5rem; font-size: 1rem; color: var(--text-2); }
+.btn-more {
+  margin-top: var(--gap);
+  min-height: 3.5rem;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+.pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: var(--gap); margin-top: 0.5rem; }
+.choice-pair { justify-content: center; text-align: center; min-height: 5rem; }
+.choice-pair .choice-label { flex: none; }
+.safety-tag { font-size: 0.85rem; font-weight: 700; color: var(--danger); margin-bottom: 0.2rem; }
+
+/* Gentle movement between screens: forward from the right, Back from the left. */
+.content.enter-fwd { animation: enter-fwd 400ms cubic-bezier(0.2, 0.7, 0.2, 1); }
+.content.enter-back { animation: enter-back 400ms cubic-bezier(0.2, 0.7, 0.2, 1); }
+@keyframes enter-fwd { from { opacity: 0; transform: translateX(1.5rem); } to { opacity: 1; transform: none; } }
+@keyframes enter-back { from { opacity: 0; transform: translateX(-1.5rem); } to { opacity: 1; transform: none; } }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .content.enter-fwd, .content.enter-back { animation: fade-in 200ms ease-out; }
+  .sphere-dot, .sphere-layer, .half, .wedge { transition: none; }
+  .card-because { animation: none; }
+}
