@@ -137,6 +137,19 @@ export function GrownUps({ onClose }: { onClose: () => void }) {
           </section>
         )}
 
+        <section aria-labelledby="about-h">
+          <h2 id="about-h" class="h2 section-h">About E-Feels</h2>
+          <p>
+            E-Feels helps a child find and share how they feel. The first screen is the check-in: Good, Calm or
+            Not good, then the feeling, then what caused it. It ends in one sentence on a card they can show you.
+          </p>
+          <p>
+            <strong>Explore feelings</strong>, below the answers, lets them browse feelings and what each can be
+            like in the body. Browsing is never saved. <strong>I feel this now</strong> on a feeling starts a
+            check-in with that feeling already chosen.
+          </p>
+        </section>
+
         <section aria-labelledby="prefs-h">
           <h2 id="prefs-h" class="h2 section-h">Preferences</h2>
           <label class="check-row">

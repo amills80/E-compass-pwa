@@ -265,3 +265,38 @@ function crumbsAll(f: Frame): string[] {
   }
   return out;
 }
+
+// ---------- Explore ----------
+
+/**
+ * A frame that places a feeling on the sphere for the Explore pages. It is
+ * never pushed onto the check-in stack and never saved.
+ */
+export function exploreFrame(half: HalfId | 'calm' | null, familyId: string | null = null, word: WordPick | null = null): Frame {
+  const base = initialFrame();
+  if (!half) return base;
+  if (half === 'calm') return { ...base, mood: 'calm' };
+  const f: Frame = { ...base, mood: half, family: familyId, word };
+  const size = word?.kind === 'ladder' ? familyOf(f)?.ladder.find((w) => w.id === word.id)?.size ?? null : null;
+  return { ...f, size };
+}
+
+/**
+ * "I feel this now" from Explore: a check-in history that has already
+ * answered up to this feeling, built with the same transitions a child's
+ * taps would use. It lands on the next question (causes, or "How big?" for a
+ * flavor word), and Back and the path chips work as if they had tapped it.
+ */
+export function stackForFeeling(half: HalfId | 'calm', familyId?: string, word?: WordPick): Frame[] {
+  const f0 = initialFrame();
+  if (half === 'calm') return [f0, pickStart(f0, 'calm')];
+  const f1 = pickStart(f0, half);
+  const f2 = pickFamily(f1, familyId!);
+  const fam = familyOf(f2);
+  if (!fam || !word) return [f0, f1, f2];
+  const f3 =
+    word.kind === 'ladder'
+      ? pickLadder(f2, fam.ladder.find((w) => w.id === word.id)!)
+      : pickFlavor(f2, fam.flavors.find((w) => w.id === word.id)!);
+  return [f0, f1, f2, f3];
+}

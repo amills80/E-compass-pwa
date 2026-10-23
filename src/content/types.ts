@@ -103,4 +103,14 @@ export interface Vocabulary {
     match: Record<string, CopingSet>;
     default: CopingSet;
   };
+  /** Content for the Explore pages. Optional: pages show what exists. */
+  explore?: Explore;
+}
+
+/** Explore content. Body signals, never faces: see the README. */
+export interface Explore {
+  /** True while the wording is waiting for OT/SLP review. */
+  draft: boolean;
+  /** "You might notice…" lines, keyed by family id or "calm". */
+  signals: Record<string, string[]>;
 }

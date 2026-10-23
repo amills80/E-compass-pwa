@@ -223,5 +223,20 @@
       "scratchy": { "cardLabel": "Help me feel better", "items": ["change-clothes"] }
     },
     "default": { "cardLabel": "Help me feel better", "items": ["breathe", "quiet", "hug", "grown-up"] }
+  },
+
+  "explore": {
+    "draft": true,
+    "signals": {
+      "calm": ["Your breathing is slow and easy.", "Your body feels still.", "It's easy to think."],
+      "happy": ["Your body feels light.", "You want to smile or laugh.", "You feel warm inside."],
+      "excited": ["Your body wants to move.", "Your heart beats faster.", "It's hard to wait."],
+      "proud": ["You stand up tall.", "You want to show someone.", "Your chest feels big and warm."],
+      "content": ["Your muscles feel loose.", "Your breathing is slow.", "You don't need anything to change."],
+      "scared": ["Your heart beats fast.", "Your tummy feels tight or fluttery.", "You want to hide or get away."],
+      "overwhelmed": ["Everything feels like too much.", "It's hard to think or talk.", "You want to cover your ears or eyes."],
+      "sad": ["Your body feels heavy or slow.", "Your eyes may get wet.", "You want to be alone, or close to someone."],
+      "mad": ["Your face or body feels hot.", "Your hands or jaw get tight.", "You want to push, stomp, or yell."]
+    }
   }
 }

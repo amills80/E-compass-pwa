@@ -590,3 +590,12 @@ h1:focus { outline: none; }
   .sphere-dot, .sphere-layer, .half, .wedge { transition: none; }
   .card-because { animation: none; }
 }
+
+/* ---------- Home: the quiet way into Explore ---------- */
+/* Below a divider and smaller than the answers, so it never reads as a fourth answer. */
+.home-more { margin-top: 1.25rem; padding-top: 0.5rem; border-top: 1px solid var(--border); display: flex; justify-content: center; }
+.home-more .btn-link { margin-top: 0; padding: 0 1rem; font-size: 1.05rem; }
+
+/* ---------- Explore ---------- */
+.explore-list { list-style: disc; padding-left: 1.4rem; display: flex; flex-direction: column; gap: 0.4rem; font-size: 1.15rem; line-height: 1.4; }
+.explore-list li::marker { color: var(--accent); }

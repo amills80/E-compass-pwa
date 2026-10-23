@@ -35,6 +35,7 @@ import { Icon } from './components/Icon';
 import { HoldButton } from './components/HoldButton';
 import { Sphere } from './components/Sphere';
 import { GrownUps } from './GrownUps';
+import { Explore } from './Explore';
 import { CheckIn, saveCheckIn, updateCheckIn } from './storage';
 import { onBusy, onIdleAtStart } from './updates';
 import { Welcome } from './Welcome';
@@ -46,6 +47,8 @@ const HOLD_MS = 250;
 export function App() {
   const [stack, setStack] = useState<Frame[]>([initialFrame()]);
   const [grownUps, setGrownUps] = useState(false);
+  // Explore feelings: a side door off home. Its pages are never saved.
+  const [exploring, setExploring] = useState(false);
   // Decided once per app launch, never mid-session.
   const [welcome, setWelcome] = useState(() => shouldShowWelcome());
   const [pending, setPending] = useState<string | null>(null);
@@ -81,7 +84,7 @@ export function App() {
 
   const canBack = stack.length > 1;
   const viewKey = `${stack.length}:${JSON.stringify(frame.view)}`;
-  const atStart = !grownUps && stack.length === 1;
+  const atStart = !grownUps && !exploring && stack.length === 1;
   useEffect(() => {
     if (atStart) onIdleAtStart();
     else onBusy();
@@ -124,6 +127,27 @@ export function App() {
   };
 
   if (grownUps) return <GrownUps onClose={() => setGrownUps(false)} />;
+
+  if (exploring) {
+    return (
+      <Explore
+        onClose={() => setExploring(false)}
+        onHelp={() => {
+          // Help is a check-in event wherever it's asked for, so it's saved.
+          setExploring(false);
+          help();
+        }}
+        onCheckIn={(s) => {
+          // "I feel this now": a fresh check-in, never an update to an earlier one.
+          checkInId.current = null;
+          setRecorded(false);
+          setSavedNote(false);
+          setExploring(false);
+          setStack(s);
+        }}
+      />
+    );
+  }
 
   if (welcome && stack.length === 1) {
     return (
@@ -175,6 +199,20 @@ export function App() {
             {opt('notgood', vocab.halves.notgood.label, pickStart(frame, 'notgood'), { icon: 'notgood', tone: 'notgood' })}
           </ul>
           <SkipButton label={vocab.start.unsure.label} onClick={() => pick('unsure', pickStart(frame, 'unsure'))} />
+          {!canBack && (
+            <div class="home-more">
+              <button
+                type="button"
+                class="btn-link"
+                onClick={() => {
+                  setSavedNote(false);
+                  setExploring(true);
+                }}
+              >
+                Explore feelings
+              </button>
+            </div>
+          )}
           {!canBack && (
             <div class="grownup-gate">
               <HoldButton
@@ -399,6 +437,12 @@ export function App() {
             <li>
               <button type="button" class="choice text-only" onClick={help}>
                 <span class="choice-label">I need help</span>
+                <span class="chev" aria-hidden="true">›</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" class="choice text-only" onClick={() => setExploring(true)}>
+                <span class="choice-label">Look at feelings</span>
                 <span class="chev" aria-hidden="true">›</span>
               </button>
             </li>
