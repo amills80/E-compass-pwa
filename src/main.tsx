@@ -2,6 +2,7 @@ import { render } from 'preact';
 import { App } from './App';
 import { initUpdates } from './updates';
 import { requestPersistence } from './storage';
+import './palette.css';
 import './styles.css';
 
 render(<App />, document.getElementById('app')!);

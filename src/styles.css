@@ -11,23 +11,26 @@
   --accent: #2f5f59;
   --accent-text: #ffffff;
   --focus: #1f56b5;
-  --comfy-tint: #dcebe4;
-  --comfy-edge: #3f7564;
-  --uncomfy-tint: #f6e3cf;
-  --uncomfy-edge: #94582a;
-  --unsure-tint: #e6e1da;
-  --calm-tint: #e2e8ee;
-  --calm-edge: #4f6f8f;
+  /* Feeling colors come from palette.css (one OKLCH recipe, see
+     scripts/palette.mjs). These names are the halves, used everywhere a
+     half appears: home buttons, sphere, history. */
+  --comfy-tint: var(--c-good-tint);
+  --comfy-edge: var(--c-good-edge);
+  --uncomfy-tint: var(--c-notgood-tint);
+  --uncomfy-edge: var(--c-notgood-edge);
+  --calm-tint: var(--c-calm-tint);
+  --calm-edge: var(--c-calm-edge);
+  --unsure-tint: #e9e5df;
   --danger: #a33a2a;
-  /* Feeling family hues (muted). Always shown with the family's word. */
-  --fam-happy: #94730c;
-  --fam-excited: #b0602a;
-  --fam-proud: #ad5580;
-  --fam-content: #4a8455;
-  --fam-scared: #7656a6;
-  --fam-overwhelmed: #3f8183;
-  --fam-sad: #4a70ad;
-  --fam-mad: #b0463c;
+  /* Help is never a feeling color. */
+  --help: var(--text);
+  /* Radii: large (answers, cards), medium (buttons), small (tags). */
+  --r-lg: 1.25rem;
+  --r-md: 1rem;
+  --r-sm: 0.75rem;
+  /* Shadow as border: a hairline ring plus a soft lift. */
+  --ring: 0 0 0 1.5px oklch(0 0 0 / 0.16);
+  --lift: 0 1px 2px -1px oklch(0 0 0 / 0.08), 0 2px 6px 0 oklch(0 0 0 / 0.06);
   --inverse-bg: #1f1d1a;
   --inverse-text: #fbf8f3;
   --radius: 1.25rem;
@@ -46,22 +49,10 @@
     --accent: #8cc3b8;
     --accent-text: #10201d;
     --focus: #8ab4ff;
-    --comfy-tint: #1f3530;
-    --comfy-edge: #86bfae;
-    --uncomfy-tint: #3d2c1d;
-    --uncomfy-edge: #e0a670;
     --unsure-tint: #36322d;
-    --calm-tint: #263039;
-    --calm-edge: #9db8d3;
     --danger: #ff9b8a;
-    --fam-happy: #dcc05c;
-    --fam-excited: #e89c66;
-    --fam-proud: #e398ba;
-    --fam-content: #8ec79b;
-    --fam-scared: #b59de0;
-    --fam-overwhelmed: #86c3c5;
-    --fam-sad: #90b0e5;
-    --fam-mad: #eb8f84;
+    --ring: 0 0 0 1.5px oklch(1 0 0 / 0.16);
+    --lift: 0 0 0 0 transparent;
     --inverse-bg: #fbf8f3;
     --inverse-text: #1f1d1a;
   }
@@ -75,7 +66,9 @@
     --comfy-edge: var(--text);
     --uncomfy-edge: var(--text);
     --calm-edge: var(--text);
+    --ring: 0 0 0 2px var(--text);
   }
+  .choice.is-colored { --o-edge: var(--text); }
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -90,6 +83,8 @@ html {
 @supports (font: -apple-system-body) {
   html { font: -apple-system-body; }
 }
+/* SF Pro Rounded on Apple devices: warmer, no download. */
+html { font-family: ui-rounded, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
 
 body {
   background: var(--bg);
@@ -174,15 +169,15 @@ h1:focus { outline: none; }
   justify-content: center;
   gap: 0.4rem;
 }
-.btn-back { border: 2px solid var(--text); background: var(--surface); }
+.btn-back { border: 2px solid var(--text); background: var(--surface); border-radius: var(--r-md); }
 /* Easy to find, but outlined so it doesn't outshout the question. */
 .btn-help {
   background: var(--surface);
-  border: 2.5px solid var(--uncomfy-edge);
+  border: 2.5px solid var(--help);
   border-radius: 999px;
   text-align: left;
 }
-.btn-help .icon { flex-shrink: 0; color: var(--uncomfy-edge); }
+.btn-help .icon { flex-shrink: 0; color: var(--help); }
 
 .crumbs {
   list-style: none;
@@ -198,10 +193,10 @@ h1:focus { outline: none; }
   font-size: 0.95rem;
   font-weight: 600;
   padding: 0.3rem 0.85rem;
-  border: 1.5px solid var(--border);
+  border: 1.5px solid var(--feel-edge1, var(--border));
   border-radius: 999px;
-  color: var(--text);
-  background: var(--surface);
+  color: var(--feel-ink, var(--text));
+  background: var(--feel-tint1, var(--surface));
   text-align: left;
   overflow-wrap: break-word;
 }
@@ -246,13 +241,25 @@ h1:focus { outline: none; }
   align-items: center;
   gap: 1rem;
   padding: 0.75rem 1.25rem;
-  background: var(--surface);
-  border: 2px solid var(--border);
-  border-radius: var(--radius);
+  /* Neutral answers pick up a little of the feeling so far. */
+  background: color-mix(in oklab, var(--feel-tint, var(--surface)) 40%, var(--surface));
+  color: var(--text);
+  border: 0;
+  border-radius: var(--r-lg);
+  box-shadow: var(--ring), var(--lift);
   text-align: left;
-  transition: background-color 120ms ease, transform 120ms ease;
+  transition-property: background-color, box-shadow, scale;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
 }
-.choice:active { transform: scale(0.98); background: var(--surface-2); }
+.choice:active { scale: 0.96; }
+/* Colored by specificity (feel.ts): family tint, or a size-ladder fill. */
+.choice.is-colored {
+  background: var(--o-bg);
+  color: var(--o-fg);
+  box-shadow: 0 0 0 1.5px var(--o-edge), var(--lift);
+}
+.choice.is-colored .chev { color: currentColor; opacity: 0.75; }
 .choice-label {
   flex: 1;
   min-width: 0;
@@ -269,9 +276,12 @@ h1:focus { outline: none; }
 .choice.has-icon .icon { flex-shrink: 0; color: var(--text); }
 .chev { font-size: 2rem; line-height: 1; color: var(--text-2); }
 
-.choice.tone-good { background: var(--comfy-tint); border-color: var(--comfy-edge); }
-.choice.tone-calm { background: var(--calm-tint); border-color: var(--calm-edge); }
-.choice.tone-notgood { background: var(--uncomfy-tint); border-color: var(--uncomfy-edge); }
+.choice.tone-good { background: var(--comfy-tint); box-shadow: 0 0 0 2px var(--comfy-edge), var(--lift); --pick: var(--c-good-edge1); }
+.choice.tone-calm { background: var(--calm-tint); box-shadow: 0 0 0 2px var(--calm-edge), var(--lift); --pick: var(--c-calm-edge1); }
+.choice.tone-notgood { background: var(--uncomfy-tint); box-shadow: 0 0 0 2px var(--uncomfy-edge), var(--lift); --pick: var(--c-notgood-edge1); }
+.choice.tone-good .icon, .choice.tone-good .choice-label { color: var(--c-good-ink); }
+.choice.tone-calm .icon, .choice.tone-calm .choice-label { color: var(--c-calm-ink); }
+.choice.tone-notgood .icon, .choice.tone-notgood .choice-label { color: var(--c-notgood-ink); }
 
 .choices-big .choice {
   min-height: 9rem;
@@ -296,8 +306,9 @@ h1:focus { outline: none; }
 .skip {
   margin-top: 1rem;
   min-height: 4rem;
-  border: 2px dashed var(--border);
-  border-radius: var(--radius);
+  /* "Not sure" is a real answer: a quiet button, not a dashed placeholder. */
+  background: color-mix(in oklab, var(--feel-tint, var(--unsure-tint)) 55%, var(--unsure-tint));
+  border-radius: var(--r-lg);
   font-size: 1.2rem;
   font-weight: 600;
   color: var(--text-2);
@@ -306,28 +317,29 @@ h1:focus { outline: none; }
 
 /* ---------- Size ---------- */
 .size-choice { gap: 1.25rem; }
-.dot { flex-shrink: 0; border-radius: 50%; background: var(--text); margin: 0 0.25rem; }
+.dot { flex-shrink: 0; border-radius: 50%; background: currentColor; margin: 0 0.25rem; }
 .dot-1 { width: 1.1rem; height: 1.1rem; margin: 0 1rem; }
 .dot-2 { width: 2rem; height: 2rem; margin: 0 0.55rem; }
 .dot-3 { width: 3rem; height: 3rem; }
 
 /* ---------- Feeling card ---------- */
 .feeling-card {
-  border: 2px solid var(--text);
-  background: var(--surface);
-  border-radius: var(--radius);
+  background: var(--feel-tint1, var(--surface));
+  color: var(--feel-ink, var(--text));
+  box-shadow: 0 0 0 2px var(--feel-edge1, var(--text)), var(--lift);
+  border-radius: var(--r-lg);
   padding: 1.25rem;
   text-align: center;
   margin-bottom: 1rem;
 }
 .card-feeling { font-size: 1.5rem; font-weight: 800; line-height: 1.25; }
-.card-because { font-size: 1.3rem; font-weight: 600; line-height: 1.3; margin-top: 0.3rem; animation: fade-in 300ms ease-out; }
+.card-because { font-size: 1.3rem; font-weight: 600; line-height: 1.3; margin-top: 0.3rem; animation: fade-in 300ms ease-out 100ms both; }
 .saved-tag {
   align-self: center;
   font-size: 0.9rem;
   font-weight: 700;
-  color: var(--comfy-edge);
-  border: 1.5px solid var(--comfy-edge);
+  color: var(--feel-ink, var(--text));
+  border: 1.5px solid currentColor;
   border-radius: 999px;
   padding: 0.1rem 0.75rem;
 }
@@ -336,9 +348,14 @@ h1:focus { outline: none; }
 .actions { display: flex; flex-direction: column; gap: var(--gap); margin-top: auto; padding-top: 1rem; }
 .btn-primary {
   min-height: 4.25rem;
-  border-radius: var(--radius);
-  background: var(--accent);
-  color: var(--accent-text);
+  border-radius: var(--r-lg);
+  /* Once there's a feeling, the main action wears its most vivid tone. */
+  background: var(--feel-fill3, var(--accent));
+  color: var(--feel-on3, var(--accent-text));
+  box-shadow: var(--lift);
+  transition-property: scale;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
   font-size: 1.35rem;
   font-weight: 800;
 }
@@ -483,7 +500,7 @@ h1:focus { outline: none; }
 /* ---------- Motion ---------- */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; }
-  .choice:active { transform: none; }
+  .choice:active, .btn-primary:active { scale: none; }
 }
 
 /* ---------- Welcome + preferences ---------- */
@@ -537,16 +554,17 @@ h1:focus { outline: none; }
 .sphere-layer { opacity: 0; transition: opacity 400ms ease; }
 .sphere-layer.is-on { opacity: 1; }
 .half { fill-opacity: 0.22; transition: fill-opacity 300ms ease; }
-.half-good { fill: var(--fam-happy); }
-.half-notgood { fill: var(--fam-sad); }
+.half-good { fill: var(--c-good-fill2); }
+.half-notgood { fill: var(--c-notgood-fill2); }
 .half.is-picked { fill-opacity: 0.45; }
 .wedge { fill-opacity: 0.2; stroke: none; transition: fill-opacity 300ms ease; }
 .wedge.is-picked { fill-opacity: 0.55; }
 .sphere-edge { fill: none; stroke: var(--border); stroke-width: 1.2; }
 .sphere-line, .sphere-ring { fill: none; stroke: var(--border); stroke-width: 0.8; opacity: 0.55; }
 .sphere-center { fill: var(--text-2); }
-.calm-glow { fill: var(--calm-edge); fill-opacity: 0.25; }
-.sphere-dot { fill: var(--text); transition: transform 450ms cubic-bezier(0.2, 0.7, 0.2, 1); }
+.calm-glow { fill: var(--c-calm-fill2); fill-opacity: 0.45; }
+/* The dot is the child: it takes the color of their feeling, ringed so it always shows. */
+.sphere-dot { fill: var(--feel-dot, var(--text)); stroke: var(--text); stroke-width: 1.5; transition: transform 450ms cubic-bezier(0.2, 0.7, 0.2, 1); }
 .is-homeward .sphere-dot { animation: homeward 24s ease-in-out forwards; }
 .is-homeward .sphere-body { animation: breathe-sphere 8s ease-in-out infinite; transform-origin: 0 0; }
 .is-paused .sphere-dot, .is-paused .sphere-body { animation-play-state: paused; }
@@ -555,12 +573,9 @@ h1:focus { outline: none; }
 .breathing .sphere { width: clamp(120px, 44vw, 190px); }
 
 /* A tapped choice fills softly with its color, holds, then the flow moves on. */
-.choice { --pick: var(--accent); transition: background-color 200ms ease, border-color 200ms ease, transform 120ms ease; }
-.choice.is-picked {
-  background: color-mix(in srgb, var(--pick) 24%, var(--surface));
-  border-color: var(--pick);
-  box-shadow: inset 0 0 0 1px var(--pick);
-}
+.choice { --pick: var(--accent); }
+.choice.is-picked { box-shadow: 0 0 0 3px var(--pick), var(--lift); }
+.choice:not(.is-colored):not([class*='tone-']).is-picked { background: color-mix(in oklab, var(--pick) 18%, var(--surface)); }
 .choices-start .choice { min-height: 4.75rem; }
 .swatch { flex-shrink: 0; width: 1.25rem; height: 1.25rem; border-radius: 50%; box-shadow: 0 0 0 2px var(--surface), 0 0 0 3px var(--border); }
 .h2.sub { margin: 1.1rem 0 0.5rem; font-size: 1rem; color: var(--text-2); }
@@ -599,3 +614,10 @@ h1:focus { outline: none; }
 /* ---------- Explore ---------- */
 .explore-list { list-style: disc; padding-left: 1.4rem; display: flex; flex-direction: column; gap: 0.4rem; font-size: 1.15rem; line-height: 1.4; }
 .explore-list li::marker { color: var(--accent); }
+
+/* ---------- Carrying the feeling ---------- */
+/* The page takes a faint wash of the feeling so far (see feel.ts). */
+.screen.has-feel { background: var(--feel-wash); transition: background-color 400ms cubic-bezier(0.2, 0, 0, 1); }
+@media (prefers-reduced-motion: reduce) { .screen.has-feel { transition: none; } }
+.explore-list li::marker { color: var(--feel-edge1, var(--accent)); }
+.btn-primary:active { scale: 0.96; }

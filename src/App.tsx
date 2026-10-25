@@ -34,6 +34,7 @@ import { Screen } from './components/Chrome';
 import { Icon } from './components/Icon';
 import { HoldButton } from './components/HoldButton';
 import { Sphere } from './components/Sphere';
+import { choiceVars, hueOf } from './feel';
 import { GrownUps } from './GrownUps';
 import { Explore } from './Explore';
 import { CheckIn, saveCheckIn, updateCheckIn } from './storage';
@@ -170,7 +171,8 @@ export function App() {
     onHelp: help,
     crumbs: crumbs(stack).map((c) => ({ label: c.label, onSelect: () => jumpTo(c.index) })),
     viewKey,
-    dir
+    dir,
+    hue: hueOf(frame)
   };
 
   const opt = (id: string, label: string, next: Frame, extra: OptionExtras = {}) => (
@@ -245,13 +247,13 @@ export function App() {
       return (
         <Screen {...common} title={`What kind of ${fam.adjective}?`} visual={sphere}>
           <ul class="choices" role="list" aria-label="From a little to a lot">
-            {fam.ladder.map((w) => opt(w.id, w.label, pickLadder(frame, w), { size: w.size }))}
+            {fam.ladder.map((w) => opt(w.id, w.label, pickLadder(frame, w), { size: w.size, hue: fam.hue }))}
           </ul>
           {fam.flavors.length > 0 && (
             <>
               <h2 class="h2 sub">Or a different kind</h2>
               <ul class="choices" role="list">
-                {fam.flavors.map((w) => opt(w.id, w.label, pickFlavor(frame, w)))}
+                {fam.flavors.map((w) => opt(w.id, w.label, pickFlavor(frame, w), { hue: fam.hue }))}
               </ul>
             </>
           )}
@@ -265,7 +267,9 @@ export function App() {
       return (
         <Screen {...common} title={vocab.size.title} visual={sphere}>
           <ul class="choices" role="list">
-            {vocab.size.options.map((o) => opt(`size-${o.size}`, o.label, pickSize(frame, o.size), { size: o.size }))}
+            {vocab.size.options.map((o) =>
+              opt(`size-${o.size}`, o.label, pickSize(frame, o.size), { size: o.size, hue: familyOf(frame)?.hue })
+            )}
           </ul>
           <SkipButton label={vocab.size.skip} onClick={() => push(pickSize(frame, null))} />
           {finishQuestions}
@@ -378,7 +382,8 @@ export function App() {
     case 'cope-list': {
       const set = copingFor(frame) ?? vocab.coping.default;
       return (
-        <Screen {...common} crumbs={undefined} title="Try one?" visual={sphere}>
+        // Calming down moves the screen toward calm, like the dot drifting home.
+        <Screen {...common} crumbs={undefined} hue="calm" title="Try one?" visual={sphere}>
           <ul class="choices" role="list">
             {set.items.map((id) => {
               const item = vocab.coping.items[id];
@@ -400,6 +405,7 @@ export function App() {
         <Screen
           {...common}
           crumbs={undefined}
+          hue="calm"
           title={item.label}
           visual={item.breathing ? undefined : sphere}
         >
@@ -475,28 +481,32 @@ interface OptionExtras {
   swatch?: string;
   /** Size dot 1–3 (distance from calm). */
   size?: number;
+  /** Family hue: colors the button by specificity (see feel.ts). */
+  hue?: string;
   variant?: 'pair';
 }
 
 function Option(props: { id: string; label: string; picked: boolean; onPick: () => void } & OptionExtras) {
-  const { label, picked, onPick, icon, tone, swatch, size, variant } = props;
+  const { label, picked, onPick, icon, tone, swatch, size, hue, variant } = props;
+  const colors = swatch ? choiceVars(swatch) : hue ? choiceVars(hue, { size }) : undefined;
   const cls = [
     'choice',
     icon ? 'has-icon' : 'text-only',
     tone ? `tone-${tone}` : '',
     variant === 'pair' ? 'choice-pair' : '',
-    picked ? 'is-picked' : ''
+    picked ? 'is-picked' : '',
+    colors ? 'is-colored' : ''
   ].join(' ');
   const button = (
     <button
       type="button"
       class={cls}
-      style={swatch ? { '--pick': `var(--fam-${swatch})` } : undefined}
+      style={colors}
       aria-pressed={picked ? 'true' : undefined}
       onClick={onPick}
     >
       {icon && <Icon name={icon} size={44} />}
-      {swatch && <span class="swatch" aria-hidden="true" style={{ background: `var(--fam-${swatch})` }} />}
+      {swatch && <span class="swatch" aria-hidden="true" style={{ background: `var(--c-${swatch}-fill3)` }} />}
       {size && <span class={`dot dot-${size}`} aria-hidden="true" />}
       <span class="choice-label">{label}</span>
       {!icon && variant !== 'pair' && <span class="chev" aria-hidden="true">›</span>}

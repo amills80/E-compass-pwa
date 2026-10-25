@@ -3,6 +3,7 @@ import type { Family, HalfId } from './content/types';
 import { Frame, WordPick, copingFor, exploreFrame, familyOf, halfOf, spherePoint, stackForFeeling, vocab, wordOf } from './flow';
 import { Screen } from './components/Chrome';
 import { Sphere } from './components/Sphere';
+import { choiceVars, hueOf } from './feel';
 
 /**
  * Explore feelings: a quiet side door off the home screen and the "I'm not
@@ -51,6 +52,7 @@ export function Explore({ onClose, onHelp, onCheckIn }: Props) {
     onHelp,
     viewKey: `explore:${stack.length}:${JSON.stringify(v)}`,
     dir,
+    hue: hueOf(frame),
     visual: <Sphere point={spherePoint(frame)} description={describe(frame)} />
   };
 
@@ -86,7 +88,7 @@ export function Explore({ onClose, onHelp, onCheckIn }: Props) {
           <h2 class="h2 sub">From a little to a lot</h2>
           <ul class="choices" role="list">
             {fam.ladder.map((w) => (
-              <Choice key={w.id} label={w.label} size={w.size} onClick={() => word({ kind: 'ladder', id: w.id })} />
+              <Choice key={w.id} label={w.label} size={w.size} hue={fam.hue} onClick={() => word({ kind: 'ladder', id: w.id })} />
             ))}
           </ul>
           {fam.flavors.length > 0 && (
@@ -94,7 +96,7 @@ export function Explore({ onClose, onHelp, onCheckIn }: Props) {
               <h2 class="h2 sub">Other kinds</h2>
               <ul class="choices" role="list">
                 {fam.flavors.map((w) => (
-                  <Choice key={w.id} label={w.label} onClick={() => word({ kind: 'flavor', id: w.id })} />
+                  <Choice key={w.id} label={w.label} hue={fam.hue} onClick={() => word({ kind: 'flavor', id: w.id })} />
                 ))}
               </ul>
             </>
@@ -137,6 +139,7 @@ export function Explore({ onClose, onHelp, onCheckIn }: Props) {
 }
 
 type ScreenCommon = {
+  hue: string | null;
   onBack: () => void;
   onHelp: () => void;
   viewKey: string;
@@ -185,16 +188,18 @@ function FeelingPage(props: {
   );
 }
 
-function Choice({ label, onClick, swatch, size }: { label: string; onClick: () => void; swatch?: string; size?: number }) {
+function Choice(props: { label: string; onClick: () => void; swatch?: string; size?: number; hue?: string }) {
+  const { label, onClick, swatch, size, hue } = props;
+  const colors = swatch ? choiceVars(swatch) : hue ? choiceVars(hue, { size }) : undefined;
   return (
     <li>
       <button
         type="button"
-        class="choice text-only"
-        style={swatch ? { '--pick': `var(--fam-${swatch})` } : undefined}
+        class={`choice text-only${colors ? ' is-colored' : ''}`}
+        style={colors}
         onClick={onClick}
       >
-        {swatch && <span class="swatch" aria-hidden="true" style={{ background: `var(--fam-${swatch})` }} />}
+        {swatch && <span class="swatch" aria-hidden="true" style={{ background: `var(--c-${swatch}-fill3)` }} />}
         {size && <span class={`dot dot-${size}`} aria-hidden="true" />}
         <span class="choice-label">{label}</span>
         <span class="chev" aria-hidden="true">›</span>

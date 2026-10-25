@@ -42,6 +42,7 @@ and a card shown to a grown-up is never lost.
 | Flow engine | `src/flow.ts`: an immutable navigation stack, so **Back is an exact undo**; sentence builder; sphere position |
 | Sphere | `src/components/Sphere.tsx`: reflects answers only (never tapped); persists between screens so the dot glides |
 | Explore | `src/Explore.tsx`: browse feelings by the check-in's own path. Body signals live in `vocabulary.json` under `explore` (`draft: true` until reviewed); signals are not causes. |
+| Color | `scripts/palette.mjs` builds `src/palette.css` from one OKLCH recipe (`npm run palette`; fails if any text pairing is under 4.5:1). `src/feel.ts` applies it: the more specific the answer, the more saturated the color. |
 | Storage | `src/storage.ts` (check-ins) and `src/prefs.ts` (preferences), both localStorage on this device only, kept separate |
 | Updates | `src/updates.ts`: new versions download quietly and apply only on the start screen, never mid check-in |
 | Hosting | Netlify (`netlify.toml`) |
@@ -66,6 +67,7 @@ npm run test:e2e   # Playwright + axe at iPhone SE (375×667) and iPad (820×118
 
 ## Decisions (Oct 2026)
 
+- v0.6 (branch `vivid-color`): one OKLCH palette; saturation follows specificity (soft halves → richer families → vivid size ladder); the chosen feeling carries through the page wash, chips, card, main button and the sphere's dot; calm-down screens shift to calm; borders became soft rings; rounded system font; "I need help" uses no feeling color.
 - v0.5 (branch `home-explore`): home is the check-in's first question. **Explore feelings** is a quiet link below the answers and in the "I'm not sure" menu. Feeling pages show body signals (draft, awaiting OT/SLP review) and what can help; **I feel this now** starts a check-in with that feeling chosen. Browsing is never saved. About moved to Grown-ups.
 - v0.4: emotion sphere; first question Good · Calm · Not good ("Not good" over "Bad"); feeling first; body states are causes; causes repeat via "Anything else?" (four per screen, "More choices"); safety cause opens a grown-up card and marks history; calm, interruptible motion with Reduce Motion fallbacks.
 - v0.3 (Alan): renamed E-Feels; save as soon as the card appears; **Finish questions** from the second question on; **Finish** on the card; "I need help" button; Add to Home Screen steps in Grown-ups; welcome shows once.

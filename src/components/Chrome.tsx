@@ -1,6 +1,7 @@
 import type { ComponentChildren } from 'preact';
 import { useEffect, useRef } from 'preact/hooks';
 import { Icon } from './Icon';
+import { feelVars } from '../feel';
 
 export interface Crumb {
   label: string;
@@ -25,6 +26,8 @@ interface ScreenProps {
   visual?: ComponentChildren;
   /** Direction of travel, for the gentle slide (fade with Reduce Motion). */
   dir?: 'fwd' | 'back';
+  /** Palette hue of the feeling so far; the screen carries it (see feel.ts). */
+  hue?: string | null;
   children: ComponentChildren;
 }
 
@@ -44,6 +47,7 @@ export function Screen({
   viewKey,
   visual,
   dir = 'fwd',
+  hue = null,
   children
 }: ScreenProps) {
   const h1 = useRef<HTMLHeadingElement>(null);
@@ -56,7 +60,7 @@ export function Screen({
   }, [viewKey]);
 
   return (
-    <div class={`screen tone-${tone} variant-${variant}`}>
+    <div class={`screen tone-${tone} variant-${variant}${hue ? ' has-feel' : ''}`} style={feelVars(hue)}>
       <header class="topbar">
         {onBack ? (
           <button type="button" class="btn-back" onClick={onBack}>

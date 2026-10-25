@@ -63,7 +63,7 @@ export function Sphere({ point, description, homeward = false, paused = false, s
                 key={f.id}
                 d={wedge(f.angle)}
                 class={`wedge ${point.hue === f.hue ? 'is-picked' : ''}`}
-                style={{ fill: `var(--fam-${f.hue})` }}
+                style={{ fill: `var(--c-${f.hue}-${point.hue === f.hue ? 'fill3' : 'fill2'})` }}
               />
             ))}
             <circle r={R * 0.56} class="sphere-ring" />

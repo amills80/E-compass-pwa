@@ -1,11 +1,12 @@
 {
   "name": "e-feels-pwa",
   "private": true,
-  "version": "0.5.0",
+  "version": "0.6.0",
   "type": "module",
   "scripts": {
     "dev": "vite --host",
     "build": "tsc --noEmit && vite build",
+    "palette": "node scripts/palette.mjs",
     "preview": "vite preview --host",
     "icons": "node scripts/make-icons.mjs",
     "test:e2e": "playwright test"

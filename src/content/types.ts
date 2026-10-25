@@ -32,7 +32,7 @@ export interface Family {
   adjective: string;
   /** Position around the wheel, degrees clockwise from the top. */
   angle: number;
-  /** CSS custom property suffix: var(--fam-<hue>). */
+  /** Palette hue name: var(--c-<hue>-…) in src/palette.css. */
   hue: string;
   ladder: [LadderWord, LadderWord, LadderWord];
   flavors: FlavorWord[];
